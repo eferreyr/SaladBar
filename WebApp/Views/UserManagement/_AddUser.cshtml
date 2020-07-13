@@ -1,0 +1,67 @@
+﻿@model SaladBarWeb.Models.UserManagementViewModels.UserViewModel
+@using SaladBarWeb.Models
+
+<form asp-action="AddUser" role="form" data-toggle="validator">
+    @await Html.PartialAsync("_ModalHeader", new ModalHeader { Heading = "Add User" })
+    <div class="modal-body form-horizontal">
+        <div class="row">
+            <div class="form-group">
+                <label asp-for="FirstName" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6 input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                    <input asp-for="FirstName" class="form-control" />
+                </div>
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6 input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+                    <input asp-for="LastName" class="form-control" />
+                </div>
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6 input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></span>
+                    <input id="email" type="email" asp-for="Email" class="form-control" required />
+                </div>
+                <div class="help-block with-errors"></div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6 input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input id="password" asp-for="Password" class="form-control" required />
+                </div>
+                <div class="help-block with-errors"></div>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6 input-group">
+                    <span class="input-group-addon"><i class="glyphicon glyphicon-lock"></i></span>
+                    <input id="confirm_password" asp-for="ConfirmPassword" class="form-control" required />
+                </div>
+                <div class="help-block with-errors"></div>
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("_ModalFooter", new ModalFooter { })
+</form>
+
+<script type="text/javascript">
+    var password = document.getElementById("password")
+        , confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword() {
+        if (password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Passwords Don't Match");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword;
+</script>

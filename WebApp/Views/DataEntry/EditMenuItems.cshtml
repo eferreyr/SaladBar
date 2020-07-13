@@ -1,0 +1,56 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuItemViewModel>
+
+@{
+    ViewData["Title"] = "Edit Menu Items";
+}
+
+@section Scripts {
+    <script></script>
+}
+
+<h2>Edit Menu Items</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-controller="DataEntry" asp-action="EditMenuItems" asp-route-menuId="@ViewBag.MenuId" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                @foreach (var item in Model)
+                {
+                    var menuItemTypesSelectList = ((IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuItemTypeViewModel>)ViewBag.MenuItemTypes)
+                        .Select(x => new SelectListItem { Text = $"{x.Type}", Value = x.Id.ToString(), Selected = x.Id == item.MenuItemTypeId });
+                    
+                    @Html.Hidden("model.Index", item.Id, new { Id = $"model.Index.{item.Id}" })
+                    <div class="well">
+                        <div class="form-group">
+                            @Html.LabelFor(x => item.MenuItemTypeId)
+                            @Html.DropDownList($"model[{item.Id}].MenuItemTypeId", menuItemTypesSelectList, "-- Item Type --", new { @class = "form-control", Id = $"model[{item.Id}].MenuItemTypeId" })
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(x => item.Name)
+                            @Html.TextBox($"model[{item.Id}].Name", item.Name, new { @class = "form-control", Id = $"model[{item.Id}].Name" })
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                @Html.CheckBox($"model[{item.Id}].Quantifiable", item.Quantifiable, new { Id = $"model[{item.Id}].Quantifiable" }) @Html.DisplayNameFor(x => item.Quantifiable)
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                @Html.CheckBox($"model[{item.Id}].Active", item.Active, new { Id = $"model[{item.Id}].Active" }) @Html.DisplayNameFor(x => item.Active)
+                            </label>
+                        </div>
+                        @Html.Hidden($"model[{item.Id}].Id", item.Id, new { Id = $"model[{item.Id}].Id" })
+                        @Html.Hidden($"model[{item.Id}].MenuId", item.MenuId, new { Id = $"model[{item.Id}].MenuId" })
+                        @Html.Hidden($"model[{item.Id}].DtCreated", item.DtCreated, new { Id = $"model[{item.Id}].DtCreated" })
+                        @Html.Hidden($"model[{item.Id}].CreatedBy", item.CreatedBy, new { Id = $"model[{item.Id}].CreatedBy" })
+                    </div>
+                }
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Save</button>
+                </div>
+
+            </form>
+        </section>
+    </div>
+</div>

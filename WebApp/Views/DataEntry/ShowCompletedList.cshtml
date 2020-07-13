@@ -1,0 +1,14 @@
+﻿@model IEnumerable<long>
+
+@{
+    ViewData["Title"] = "Completed";
+}
+
+<h2>Completed Trays</h2>
+
+<h4>Tray</h4>
+@foreach (var tray in Model)
+{
+    <a asp-action="Edit" asp-route-id="@ViewBag.WMId">@tray</a>
+}
+

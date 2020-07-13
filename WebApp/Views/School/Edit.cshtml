@@ -1,0 +1,61 @@
+﻿@model SaladBarWeb.DBModels.Schools
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2>Edit</h2>
+
+<h4>Schools</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="District" class="control-label"></label>
+                <input asp-for="District" class="form-control" />
+                <span asp-validation-for="District" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Mascot" class="control-label"></label>
+                <input asp-for="Mascot" class="form-control" />
+                <span asp-validation-for="Mascot" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Colors" class="control-label"></label>
+                <input asp-for="Colors" class="form-control" />
+                <span asp-validation-for="Colors" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SchoolLogo" class="control-label"></label>
+                <input asp-for="SchoolLogo" class="form-control" />
+                <span asp-validation-for="SchoolLogo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="SchoolTypeId" class="control-label"></label>
+                <select asp-for="SchoolTypeId" class="form-control" asp-items="ViewBag.SchoolTypeId"></select>
+                <span asp-validation-for="SchoolTypeId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Active" class="control-label"></label>
+                <input asp-for="Active" class="form-control" />
+                <span asp-validation-for="Active" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+

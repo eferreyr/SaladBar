@@ -1,0 +1,42 @@
+﻿@model IEnumerable<SaladBarWeb.DBModels.Schools>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<style>
+    h2 {
+        color: forestgreen;
+        text-align: center;
+    }
+    th {
+        color:hotpink
+    }
+</style>
+
+<h2>Data Entry</h2>
+
+<ol class="breadcrumb">
+    Navigation:
+    <li class="active">Schools</li>
+</ol>
+
+
+
+
+<table class="table table-bordered">
+    <tr>
+        <th>School Name</th>
+        <th>School Type</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.ActionLink(item.Name, "DataEntryMeasurementDays", "DataEntry", new { schoolId = item.Id }) </td>
+            <td>@item.SchoolType.Type</td>
+        </tr>
+    }
+</table>
+
+Abc123123

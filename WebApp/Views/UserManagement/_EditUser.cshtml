@@ -1,0 +1,49 @@
+﻿@model SaladBarWeb.Models.UserManagementViewModels.EditUserViewModel
+@using SaladBarWeb.Models
+
+<form asp-action="EditUser" asp-route-oldEmail="@Model.Email" role="form">
+    @await Html.PartialAsync("_ModalHeader", new ModalHeader { Heading = "Edit User" })
+    <div class="modal-body form-horizontal">
+        <div class="row">
+            <div class="form-group">
+                <label asp-for="FirstName" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6">
+                    <input asp-for="FirstName" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6">
+                    <input asp-for="LastName" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6">
+                    <input asp-for="Email" class="form-control" readonly />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Active" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-6">
+                    <input type="checkbox" asp-for="Active" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserRoles" class="col-lg-3 col-sm-3 control-label"></label>
+                <div class="col-lg-9">
+                    @for (int i = 0; i < Model.UserRoles.Count; i++)
+                    {
+                        <div class="col-lg-4">
+                            <input type="checkbox" asp-for="@Model.UserRoles[i].Selected" />
+                            <label asp-for="@Model.UserRoles[i].Selected">@Model.UserRoles[i].Text</label>
+                            <input type="hidden" asp-for="@Model.UserRoles[i].Value" />
+                            <input type="hidden" asp-for="@Model.UserRoles[i].Text" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("_ModalFooter", new ModalFooter { })
+</form>

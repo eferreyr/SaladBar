@@ -1,0 +1,86 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.DataEntryLockViewModel>
+
+@{
+    ViewData["Title"] = "DataEntryLock";
+}
+
+@section Scripts {
+    <script>
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function handleErrors(response) {
+            if (!response.ok) {
+                throw Error(response.statusText);
+            }
+            return response;
+        }
+
+        function unlock(dataEntryLockId, element) {
+            console.log("unlock");
+            fetch(`./ToggleDataEntryLockStatusForId?dataEntryLockId=${dataEntryLockId}`)
+                .then(handleErrors)
+                .then(updateUnlockText(element))
+                .catch(error => console.log(error));
+        }
+
+        async function updateUnlockText(element) {
+            var spinner = $($(element).siblings()[0]);
+            spinner.show();
+            await sleep(500);
+            $(element).replaceWith("<span class='text-success'>Unlocked!</span>")
+            spinner.hide();
+        }
+    </script>
+}
+
+<h2>Data Entry Lock</h2>
+
+<h4>Currently Locked Wave</h4>
+
+@if (Model.Count() > 0)
+{
+    foreach (var item in Model)
+    {
+        <div class="row form-horizontal well">
+            <div class="col-sm-1">
+            </div>
+            <div class="col-sm-7">
+                <div class="form-group">
+                    @Html.LabelFor(x => item.InterventionDay.School.Name, new { @class = "col-sm-2  control-label" })
+                    <div class="col-sm-10">
+                        <p class="form-control-static">@Html.DisplayFor(x => item.InterventionDay.School.Name)</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => item.InterventionDay.DtIntervention, new { @class = "col-sm-2  control-label" })
+                    <div class="col-sm-10">
+                        @{
+                            var interventionDate = item.InterventionDay.DtIntervention.ToString("yyyy-MM-dd");
+                        }
+                        <p class="form-control-static">@Html.DisplayFor(x => interventionDate)</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => item.LockedUser, new { @class = "col-sm-2  control-label" })
+                    <div class="col-sm-10">
+                        <p class="form-control-static">@Html.DisplayFor(x => item.LockedUser.FirstName) @Html.DisplayFor(x => item.LockedUser.LastName) (@Html.DisplayFor(x => item.LockedUser.Email))</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <a href="#" onclick="unlock(@item.dataEntryLockId, this)">Unlock</a>
+                    <img alt="Loading" src="~/img/spinner.gif" style="height:20px; width:20px;" hidden />
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="well">
+        <h4 class="text-success">No waves are locked.</h4>
+    </div>
+}

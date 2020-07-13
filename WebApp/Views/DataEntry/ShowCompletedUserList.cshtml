@@ -1,0 +1,15 @@
+﻿@model IEnumerable<SaladBarWeb.DBModels.TempAlphaTestWmtracking>
+
+@{
+    ViewData["Title"] = "Completed";
+}
+
+<h2>Completed</h2>
+
+User
+@foreach (var item in Model)
+{
+    <a asp-action="ShowCompleted" asp-route-id="@item.Id">@item.Username</a>
+}
+
+

@@ -1,0 +1,607 @@
+﻿@using SaladBarWeb.Models.DataEntryViewModels
+@using SaladBarWeb.DBModels
+
+@model IEnumerable<WeighingMeasurementViewModel>
+
+
+@{
+    ViewData["Title"] = "Weighings";
+    var isLight = false;
+    var interventionDayTrayTypesSelectList = ((List<InterventionDayTrayTypes>)ViewBag.InterventionDayTrayTypes)
+                        .Select(x => new SelectListItem { Text = x.TrayType.Type, Value = x.Id.ToString() });
+    var weighings = (IEnumerable<Weighings>)ViewBag.Weighings;
+}
+
+@section Stylesheets {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="~/css/starter-template.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="~/js/jquery.zoom.min.js"></script>
+
+    <script>
+        var missingTrayCount = 1;
+        var trayCountDict = {};
+        var startTime = 0;
+        var endTime = 0;
+
+        function addMissingTray() {
+            var internalTrayId = this.id.replace("add-tray", "");
+            var newTrayStr = `<div class="border-jy">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-2 col-md-1">
+                                <h2 class="label label-info tray-label">Tray ${trayCount + 1}</h2>
+                            </div>
+                            <div class="col-xs-12 col-sm-8 col-md-8">
+                                <label>
+                                    Tray Type
+                                     <select class="form-control">
+                                        <option disabled selected value="">-- Tray Type --</option>
+                                        <option value="full">White Large 5-Compartment Tray</option>
+                                        <option value="fvonly">Black Large 5-Compartment Tray</option>
+                                        <option value="full">Cardboard 5-Compartment Tray</option>
+                                        <option value="full">Circular Foam Plate - White</option>
+                                        <option value="full">Plastic Portion Tray - Black</option>
+                                        <option value="full">Small Paper Boat - White</option>
+                                        <option value="full">Medium Cardboard Boat</option>
+                                        <option value="full">Large Paper Boat - White</option>
+                                        <option value="full">N/A</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </div >
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6 col-sm-push-2 col-md-push-1">
+                                <label>Quantity <input class="form-control input-sm" type="text" name="quantity" /></label>
+                            </div>
+                            <div class="col-xs-12 col-sm-1 col-sm-pull-6 col-md-pull-6">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-tray${internalTrayId}-${trayCount + 1}" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div >`;
+            var newTray = $($.parseHTML(newTrayStr));
+            $("#tray" + (trayCount)).after(newTray);
+            $(`#remove-tray${internalTrayId}-${trayCount + 1}`).on("click", removeTray);
+            trayCount++;
+            setTimeout(function () {
+                newTray.prop("id", "tray" + trayCount);
+            });
+        }
+
+        function addTray() {
+            var internalTrayId = this.id.replace("add-tray-", "");
+            if(trayCountDict[internalTrayId] === undefined) {
+                trayCountDict[internalTrayId] = 1;
+            }
+            trayCountDict[internalTrayId] += 1;
+            var trayNumber = trayCountDict[internalTrayId];
+            var newTrayStr = `<div class="border-jy" id="tray-${internalTrayId}-${trayNumber}">
+                        <input type="hidden" name="model[${internalTrayId}].WeighingMeasurementTrays.Index" value="${trayNumber}" />
+                        <input type="hidden" name="model[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].CreatedBy" value=@ViewBag.UserName />
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-2 col-md-1">
+                                <h2 class="label label-info tray-label">Tray ${trayNumber}</h2>
+                            </div>
+                            <div class="col-xs-12 col-sm-8 col-md-8">
+                                <label>
+                                    Tray Type*
+                                    @Html.DropDownList("model[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].InterventionDayTrayTypeId", interventionDayTrayTypesSelectList, "-- Tray Type --", new { @class = "form-control", Id = "model[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].InterventionDayTrayTypeId" })
+                                     <!--<select class="form-control">
+                                        <option disabled selected value="">-- Tray Type --</option>
+                                        <option value="full">White Large 5-Compartment Tray</option>
+                                        <option value="fvonly">Black Large 5-Compartment Tray</option>
+                                        <option value="full">Cardboard 5-Compartment Tray</option>
+                                        <option value="full">Circular Foam Plate - White</option>
+                                        <option value="full">Plastic Portion Tray - Black</option>
+                                        <option value="full">Small Paper Boat - White</option>
+                                        <option value="full">Medium Cardboard Boat</option>
+                                        <option value="full">Large Paper Boat - White</option>
+                                        <option value="full">N/A</option>
+                                    </select>-->
+                                </label>
+                            </div>
+                        </div >
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6 col-sm-push-2 col-md-push-1">
+                                <label>Quantity <input class="form-control input-sm" type="text" name="model[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].Quantity" /></label>
+                            </div>
+                            <div class="col-xs-12 col-sm-1 col-sm-pull-6 col-md-pull-6">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-tray-${internalTrayId}-${trayNumber}" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div >`;
+            var newTray = $($.parseHTML(newTrayStr));
+            $(`#trays-${internalTrayId} .border-jy:last`).after(newTray);
+            $(`#remove-tray-${internalTrayId}-${trayNumber}`).on("click", removeTray);
+            // Re-number the tray label name
+            $(`#trays-${internalTrayId} .tray-label`).each(function (idx) {
+                $(this).text(`Tray ${idx + 1}`);
+            });
+        }
+
+        function removeTray() {
+            var id = this.id.replace("remove-tray-", "").split("-");
+            var internalTrayId = id[0];
+            var trayNumber = id[1];
+
+            $(`#tray-${internalTrayId}-${trayNumber}`).remove();
+            //this.closest('.border-jy').remove();
+            // Re-number the tray label name
+            $(`#trays-${internalTrayId} .tray-label`).each(function (idx) {
+                $(this).text(`Tray ${idx + 1}`);
+            });
+        }
+
+        function turnImage() {
+            var imageId = this.id.replace("_turn", "");
+            $(imageId).css("transform", "rotate(90deg)");
+        }
+
+        function addTimeTrackingElement(info) {
+            $("[name='model.Index']").each(function () {
+                var modelId = $(this).val();
+                var timeTrackingElement = `
+                    <input type="hidden" name="model[${modelId}].WeighingMeasurementTracking.Index" value=${modelId} />
+                    <input type="hidden" name="model[${modelId}].WeighingMeasurementTracking[${modelId}].Info" value=${info} />
+                    <input type="hidden" name="model[${modelId}].WeighingMeasurementTracking[${modelId}].CreatedBy" value=@ViewBag.UserName />`;
+                $("#time-tracking").append(timeTrackingElement);
+
+                //var notesLabel = `<label class="notes">Notes<textarea class="form-control notes" name="model[${modelId}].Notes")></textarea></label>`;
+                //$(`#notes-${modelId}`).append(notesLabel);
+                //$(`[name='model[${modelId}].Notes']`).val("abc");
+            });
+           
+            @*var timeTrackingElement = `
+                <input type="hidden" name="model[17].WeighingMeasurementTracking.Index" value=17 />
+                <input type="hidden" name="model[17].WeighingMeasurementTracking[17].Info" value=${info} />
+                <input type="hidden" name="model[17].WeighingMeasurementTracking[17].CreatedBy" value=@ViewBag.UserName />`;
+            $("#time-tracking-test").append(timeTrackingElement);*@
+        }
+
+        $(document).ready(function () {
+            $('img')
+                .wrap('<span style="display:inline-block"></span>')
+                .css('display', 'block')
+                .parent()
+                .zoom({ on: 'click' });
+
+            $('imageEditor').on('reset', function (e) {
+                setTimeout(function () {
+                    editImage();
+                }, 100);
+            });
+
+            // editing image via css properties
+            function editImage() {
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+
+                var br = $(obj_brightness).val(); // brightness
+                var ct = $(obj_contrast).val(); // contrast
+
+                $('#imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                $('#imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+            }
+
+            function resetImage() {
+                var default_value = 100;
+
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+
+                $(obj_brightness).val(default_value); // brightness
+                $(obj_contrast).val(default_value); // contrast
+
+                $('#imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                $('#imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+            }
+
+            // When sliders change image will be updated via editImage() function
+            $("input[type=range]").change(editImage).mousemove(editImage);
+            $("button[name*='_reset']").on('click', resetImage);
+
+            $("button[name*='_turn']").on('click', turnImage);
+
+            $("#add-missing-tray").on("click", addMissingTray);
+
+            // Add additional trays in the tray info block
+            $("[id^='add-tray']").on("click", addTray);
+
+            // Disable scroll on input type number, which is to prevent changing the value with scroll
+            $("form").on("wheel", "input[type=number]", function (e) {
+                $(this).blur();
+            });
+
+            // When the item's textbox is focused, check the checkbox automatically
+            $("input[type=number][id$='qty']").focus(function () {
+                var checkboxId = "#" + this.id.replace("-qty", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                $(checkboxId).prop("checked", true);
+            });
+
+            // TODO: Need to disallow "e" to be enter in the textbox
+            // When the item's textbox is out of focus, see if the checkmark is still needed.
+            $("input[type=number][id$='qty']").focusout(function () {
+                var checkboxId = "#" + this.id.replace("-qty", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var val = $(this).val();
+                var valInt = parseInt(val);
+                if (val === "") {
+                    $(checkboxId).prop("checked", false);
+                }
+                else if (isNaN(valInt)) {
+                    // TODO: Add validation message here.
+                }
+                else if (valInt < 1) {
+                    $(checkboxId).prop("checked", false);
+                }
+            });
+
+            $("#data-entry-submit").on("click", function () {
+                endTime = new Date().getTime();
+                var infoData = {
+                    "StartTime": startTime,
+                    "EndTime": endTime
+                };
+                var infoStr = JSON.stringify(infoData);
+                addTimeTrackingElement(infoStr);
+                console.log(endTime - startTime);
+            })
+
+            startTime = new Date().getTime();
+
+            // This is for the image to move with the page scroll
+            //$(window).scroll(function () {
+            //    var div1 = $(".navbar");
+            //    var div2 = $("#image12");
+            //    var div1_top = div1.offset().top;
+            //    var div2_top = div2.offset().top;
+            //    var div1_bottom = div1_top + div1.height();
+            //    var div2_bottom = div2_top + div2.height();
+
+            //    var bottomPos = $(window).scrollTop() + $(window).height();
+
+            //    console.log("NavBar Top " + div1_top);
+            //    console.log("Image Top " + div2_top);
+
+            //    if (div1_bottom >= div2_top && div1_top < div2_bottom) {
+            //        var preDiv2Top = div2.position().top;
+            //        div2.css("top", `${preDiv2Top + 5}px`);
+            //    } else {
+            //        $("#result").html("");
+            //    }
+
+            //    //if (bottomPos <= div2_bottom) {
+            //    //    var preDiv2Top = div2.position().top;
+            //    //    div2.css("top", preDiv2Top - div1.height());
+            //    //}
+            //});
+        });
+    </script>
+}
+
+<h2>Weighing Measurements <span class="label label-default">Alpha Test</span></h2>
+
+
+<ol class="breadcrumb">
+    Navigation:
+    <li>@Html.ActionLink("Schools", "Index", "DataEntry")</li>
+    <li>@Html.ActionLink((string)ViewBag.SchoolName, "DataEntryMeasurementDays", "DataEntry", new { schoolId = (int)ViewBag.SchoolId })</li>
+    <li class="active">@ViewBag.SchoolName @ViewBag.MeasurementDate.ToString("MM/dd/yyyy")</li>
+</ol>
+
+<div class="main-container">
+    @if (ViewBag.Message != null)
+    {
+        if (((string)ViewBag.Message).Contains("successfully"))
+        {
+            <div class="alert alert-success" role="alert">@ViewBag.Message</div>
+        }
+        else
+        {
+            <div class="alert alert-danger" role="alert">@ViewBag.Message</div>
+        }
+    }
+
+    <div>
+        <h4>Student ID: 12345<br />
+        School: @ViewBag.SchoolName<br />
+        Date of Visit: @ViewBag.MeasurementDate.ToString("MM/dd/yyyy")</h4>
+    </div>
+    <!--Controls for CSS filters via range input-->
+    <div>
+        <form id="weighing-measurement" asp-controller="DataEntry" asp-action="WeighingsAlpha" asp-route-schoolId="@ViewBag.SchoolId" asp-route-interventionDayId="@ViewBag.InterventionDayId" method="post">
+            <div class="container">
+                @foreach (var item in weighings)
+                {
+                    var base64 = Convert.ToBase64String(item.Picture);
+                    var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+                    isLight = !isLight;
+                    var backgroundColorClass = isLight ? "light-bg" : "dark-bg";
+                    // Dropdown lists
+                    var weighStationTypesSelectList = ((List<WeighStationTypes>)ViewBag.WeighStationTypes)
+                        .Select(x => new SelectListItem { Text = x.Type, Value = x.Id.ToString(), Selected = item.WeighStationTypeId == x.Id });
+                    var imageTypesSelectList = ((List<SaladBarWeb.DBModels.ImageTypes>)ViewBag.ImageTypes)
+                        .Select(x => new SelectListItem { Text = x.Type, Value = x.Id.ToString() });
+                    
+
+
+                    <div class="row tray-block">
+                        <input type="hidden" name="model.Index" value=@($"{item.Id}") />
+                        <input type="hidden" name=@($"model[{item.Id}].WeighingId") value=@($"{item.Id}") />
+                        <input type="hidden" name=@($"model[{item.Id}].CreatedBy") value=@ViewBag.UserName />
+                        <h3>@item.WeighStationType.Type</h3>
+                        <div class="col-xs-12 col-sm-6" id="image12">
+                            <div id="imageContainer">
+                                <img src="@imgSrc" class="img-fluid" alt="Tray Image" id="@($"image{item.Id}")">
+                            </div>
+                            
+                            <div class="panel panel-primary">
+                                <div class="panel-heading" data-toggle="collapse" data-target="@($"#panel_body{item.Id}")">
+                                    <h4 class="panel-title">Image Controls</h4>
+                                </div>
+                                <div class="panel-body collapse" id="@($"panel_body{item.Id}")">
+                                    <div class="row">
+                                        <div class="col-xs-4">
+                                            <label>Brightness<input id="@($"image{item.Id}_br")" name="@($"image{item.Id}_br")" type="range" min="0" max="200" value="100"></label>
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <label>Contrast<input id="@($"image{item.Id}_ct")" name="@($"image{item.Id}_ct")" type="range" min="0" max="200" value="100"></label>
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <button type="button" class="btn btn-primary" id="@($"image{item.Id}_reset")" name="@($"image{item.Id}_reset")">Reset</button>
+                                        </div>
+                                        <div class="col-xs-4">
+                                            <button type="button" class="btn btn-primary" id="@($"image{item.Id}_turn")" name="@($"image{item.Id}_turn")">Rotate</button>
+                                        </div>
+                                    </div><!-- /.panel-body/row -->
+                                </div><!-- /.panel-body -->
+                            </div><!-- /.panel-primary -->
+                        </div><!-- /.col -->
+                        <div class="col-xs-12 col-sm-6 image-menu-data">
+                            <div class="tray-info">
+                                <h4 class="bg-primary text-center">Tray Info</h4>
+                                @{ 
+                                    var trayId = item.WeighingTrays
+                                        .Where(x => x.WeighingId == item.Id)
+                                        .Select(x => x.TrayId)
+                                        .FirstOrDefault();
+                                }
+                                <div class="well">
+                                    <label>
+                                        Tray ID: @trayId
+                                    </label>
+                                    <label>
+                                        Salad Dressing: @item.SaladDressing
+                                    </label>
+                                    <label>
+                                        Milk: @item.Milk
+                                    </label>
+                                    <label>
+                                        Multiple Trays: @item.Multiple
+                                    </label>
+                                    <label>
+                                        Empty: @item.Empty
+                                    </label>
+                                    <label>
+                                        Unique: @item.UniqueSituation
+                                    </label>
+                                </div>
+                                <label>
+                                    Scan Type*
+                                    @Html.DropDownList($"model[{item.Id}].WeighStationTypeId", weighStationTypesSelectList, "-- Scan Type --", new { @class = "form-control" })
+                                </label>
+                                <label>
+                                    Image Type*
+                                    @Html.DropDownList($"model[{item.Id}].ImageTypeId", imageTypesSelectList, "-- Image Type --", new { @class = "form-control" })
+                                    @*<select class="form-control">
+                                        <option disabled selected value="">-- Image Type --</option>
+                                        <option value="full">Full</option>
+                                        <option value="fvonly">FV Only</option>
+                                    </select>*@
+                                </label>
+                                <div id=@($"trays-{item.Id}")>
+                                    <div class="border-jy" id=@($"tray-{item.Id}-1")>
+                                        <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementTrays.Index") value="1" />
+                                        <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementTrays[1].CreatedBy") value=@ViewBag.UserName />
+                                        <div class="row">
+                                            <div class="col-xs-12 col-sm-2 col-md-1">
+                                                <h2 class="label label-info tray-label">Tray 1</h2>
+                                            </div>
+                                            <div class="col-xs-12 col-sm-8 col-md-8">
+                                                <label>
+                                                    Tray Type*
+                                                    @Html.DropDownList($"model[{item.Id}].WeighingMeasurementTrays[1].InterventionDayTrayTypeId", interventionDayTrayTypesSelectList, "-- Tray Type --", new { @class = "form-control", Id = $"model[{item.Id}].WeighingMeasurementTrays[1].InterventionDayTrayTypeId" })
+                                                    @*<select class="form-control">
+                                                        <option disabled selected value="">-- Tray Type --</option>
+                                                        <option value="full">White Large 5-Compartment Tray</option>
+                                                        <option value="fvonly">Black Large 5-Compartment Tray</option>
+                                                        <option value="full">Cardboard 5-Compartment Tray</option>
+                                                        <option value="full">Circular Foam Plate - White</option>
+                                                        <option value="full">Plastic Portion Tray - Black</option>
+                                                        <option value="full">Small Paper Boat - White</option>
+                                                        <option value="full">Medium Cardboard Boat</option>
+                                                        <option value="full">Large Paper Boat - White</option>
+                                                        <option value="full">N/A</option>
+                                                    </select>*@
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-xs-12 col-sm-2 col-md-1">
+                                            </div>
+                                            <div class="col-xs-12 col-sm-8 col-md-8">
+                                                <label>Quantity* <input class="form-control input-sm" type="text" name=@($"model[{item.Id}].WeighingMeasurementTrays[1].Quantity") /></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                                <button type="button" class="btn btn-info glyphicon glyphicon-plus" id=@($"add-tray-{ item.Id}") aria-label="add"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br />
+                                <label>Weight(g)* <input class="form-control" type="number" name=@($"model[{item.Id}].Weight") /></label>
+                            </div>
+                            <div class="other-info">
+                                @foreach (var itemType in (IEnumerable<MenuItemTypeViewModel>)ViewBag.MenuItemTypes)
+                                {
+                                    <h4 class="bg-primary text-center">@itemType.Type</h4>
+                                    foreach (var menuItem in (IEnumerable<MenuItemViewModel>)ViewBag.MenuItems)
+                                    {
+                                        if (menuItem.MenuItemTypeId == itemType.Id)
+                                        {
+                                            <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementMenuItems.Index") value=@($"{menuItem.Id}") />
+                                            <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItemId") value=@($"{menuItem.Id}") />
+                                            <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].CreatedBy") value=@ViewBag.UserName />
+                                            
+                                            @if (menuItem.Quantifiable)
+                                            {
+                                                <label>
+                                                    <input type="checkbox" name=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected") value="true" tabindex="-1" id=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")> @menuItem.Name
+                                                    <input type="number" name=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity") id="@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")" class="form-control" />
+                                                </label>
+                                            }
+                                            else
+                                            {
+                                                <label>
+                                                    <input type="checkbox" name=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected") value="true" id=@($"model[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")> @menuItem.Name
+                                                </label>
+                                            }
+                                        }
+                                    }
+                                }
+                                @*<h4 class="bg-primary text-center">Entrees</h4>
+                                <label><input type="checkbox" name="Crunchy Fish Fillet Sandwich" value="1" tabindex="-1" id="crunchy-fish-fillet-sandwich"> Crunchy Fish Fillet Sandwich <input  type="number" name="qty" id="crunchy-fish-fillet-sandwich-qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="BBQ Sandwich" value="2" tabindex="-1" id="bbq-sandwich"> BBQ Sandwich <input type="number" name="qty" id="bbq-sandwich-qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Salad Bar" value="3" tabindex="-1" id="salad-bar"/> Salad Bar<input type="number" name="salad-bar-qty" id="salad-bar-qty" class="form-control" /></label>
+                                <h4 class="bg-primary text-center">Sides</h4>
+                                <label><input type="checkbox" name="Fries" value="1"> Fries<input type="number" name="qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Chips" value="2"> Chips<input type="number" name="qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Dressing" value="3"> Dressing<input type="number" name="qty" class="form-control" /></label>
+                                <h4 class="bg-primary text-center">Fruits and Vegetables</h4>
+                                <label><input type="checkbox" name="Fresh Baby Carrots/dip" value="1"> Fresh Baby Carrots/dip</label>
+                                <label><input type="checkbox" name="Baked Beans" value="2"> Baked Beans</label>
+                                <label><input type="checkbox" name="Assorted Fruit" value="3"> Assorted Fruit</label>
+                                <h4 class="bg-primary text-center">Beverages</h4>
+                                <label><input type="checkbox" name="1% Milk" value="1"> 1% Milk<input type="number" name="qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Chocolate Milk" value="2"> Chocolate Milk<input type="number" name="qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Juice" value="2"> Juice<input type="number" name="qty" class="form-control" /></label>
+                                <label><input type="checkbox" name="Water" value="3"> Water<input type="number" name="qty" class="form-control" /></label>
+                                <h4 class="bg-primary text-center">Miscellaneous</h4>
+                                <label><input type="checkbox" name="Utensils" value="1"> Utensils<input type="number" name="qty" class="form-control" /></label>*@
+
+
+
+                                <h4 class="bg-primary text-center">Image Issues</h4>
+                                @foreach (var imageMetadataItem in (IEnumerable<ImageMetadataViewModel>)ViewBag.imageMetadata)
+                                {
+                                    <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementImageMetadata.Index") value=@($"{imageMetadataItem.Id}") />
+                                    <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].ImageMetadataId") value=@($"{imageMetadataItem.Id}") />
+                                    <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].CreatedBy") value=@ViewBag.UserName />
+                                    <label>
+                                        <input type="checkbox" name=@($"model[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Selected") value="true" id=@($"model[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Selected")> @imageMetadataItem.Name
+                                    </label>
+                                }
+                                @*<label><input type="checkbox" name="Poor Quality" value="1"> Poor Quality</label>
+                                <label><input type="checkbox" name="Missing Picture" value="2"> Missing Picture</label>*@
+                                <h4 class="bg-primary text-center">Notes</h4>
+                                <label class="notes">Notes<textarea class="form-control notes" name=@($"model[{item.Id}].Notes")></textarea></label>
+
+                                @*<input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementTracking.Index") value=@($"{item.Id}") />
+                                <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementTracking[{item.Id}].Info") value="{'StartTime':12313,'EndTime':3881739}" />
+                                <input type="hidden" name=@($"model[{item.Id}].WeighingMeasurementTracking[{item.Id}].CreatedBy") value=@ViewBag.UserName />*@
+                            </div>
+                        </div>
+                    </div>
+                     <div id="time-tracking-test">
+                    </div>
+                }
+                <div class="row">
+                    <div class="col-xs-12 border-jy">
+                        <h4 class="bg-primary label-info text-center">Global Info</h4>
+                        <div class="row center-block">
+                            <div class="col-xs-4 col-xs-offset-3 col-sm-2 col-sm-offset-4">
+                                Missing Tray?
+                            </div>
+                            <div class="col-xs-1 col-sm-1">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-info glyphicon glyphicon-plus" id="add-missing-tray" aria-label="add"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-5 col-xs-offset-3 col-sm-4 col-sm-offset-4 col-md-3 col-md-offset-4">
+                                <label>
+                                    <span class="label label-warning">Missing Tray 1</span>
+                                    Photo Type:
+                                    <select class="form-control">
+                                        <option disabled selected value="">-- Photo Type --</option>
+                                        <option value="full">PreLunch - Full Lunch</option>
+                                        <option value="fvonly">PreLunch - FV Only</option>
+                                        <option value="full">PostLunch - Full Lunch</option>
+                                        <option value="full">PostLunch - FV Only</option>
+                                    </select>
+                                    <span class="btn-group btn-group-sm" role="group" aria-label="...">
+                                        <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-missing-tray-1" aria-label="remove"></button>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="col-xs-1 col-sm-1 icon-div-padding">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-missing-tray-1" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-6 col-xs-offset-3 col-sm-6 col-sm-offset-3 col-md-5 col-md-offset-3">
+                                <label class="notes">Notes<textarea class="form-control notes"></textarea></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--Time Tracking-->
+                <div id="time-tracking">
+                </div>
+            </div><!-- /.container -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-default" id="data-entry-submit">Submit</button>
+                
+            </div>
+        </form><!-- /.imageEditor -->
+    </div><!-- /.studentInfo -->
+</div><!-- /.main-container -->

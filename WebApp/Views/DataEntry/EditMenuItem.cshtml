@@ -1,0 +1,61 @@
+﻿@model SaladBarWeb.Models.DataEntryViewModels.MenuItemViewModel
+
+@{
+    ViewData["Title"] = "Edit Menu Item";
+    var menuItemTypesSelectList = ((IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuItemTypeViewModel>)ViewBag.MenuItemTypes)
+                        .Select(x => new SelectListItem { Text = $"{x.Type}", Value = x.Id.ToString(), Selected = x.Id == Model.MenuItemTypeId });
+}
+
+@section Scripts {
+    <script>
+</script>
+}
+
+<h2>Edit Menu Item</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-controller="DataEntry" asp-action="EditMenuItem" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="well">
+
+                    @*<input type="hidden" id="z0__Index" name="model.Index" value="0" />*@
+
+                    <div class="form-group">
+                        <label asp-for="MenuItemTypeId" class="control-label"></label>
+                        <select asp-for="MenuItemTypeId" asp-items="menuItemTypesSelectList" class="form-control">
+                            <option value="">-- Item Type --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                    </div>
+                    @*<div class="form-group">
+                        <label asp-for="Quantifiable" class="control-label"></label>
+                            <input asp-for="Quantifiable" />
+                    </div>*@
+                    <div class="checkbox">
+                        <label>
+                            <input asp-for="Quantifiable" /> @Html.DisplayNameFor(x => x.Quantifiable)
+                        </label>
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input asp-for="Active" /> @Html.DisplayNameFor(x => x.Active)
+                        </label>
+                    </div>
+
+                    <input asp-for="Id" hidden />
+                    <input asp-for="MenuId" hidden />
+                    <input asp-for="DtCreated" hidden />
+                    <input asp-for="CreatedBy" hidden />
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Save</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

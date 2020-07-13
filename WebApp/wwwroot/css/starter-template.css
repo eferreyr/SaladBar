@@ -1,0 +1,102 @@
+body {
+  padding-top: 50px;
+}
+.main-container {
+  padding: 10px 10px;
+  text-align: center;
+}
+
+.image-menu-data {
+  text-align: left;
+}
+
+.img-fluid {
+  max-width: 100%; 
+  height: auto;
+}
+
+.imageContainer {
+    margin: 10px;
+}
+
+h3 {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+/* styles unrelated to zoom */
+* { border:0; margin:0; padding:0; }
+
+
+/* these styles are for the demo, but are not required for the plugin */
+.zoom {
+  display:inline-block;
+  position: relative;
+}
+
+/* magnifying glass icon */
+.zoom:after {
+  content:'';
+  display:block; 
+  width:33px; 
+  height:33px; 
+  position:absolute; 
+  top:0;
+  right:0;
+  background:url(icon.png);
+}
+
+.zoom img {
+  display: block;
+}
+
+.zoom img::selection { background-color: transparent; }
+
+label {
+  border:1px solid #ccc;
+  padding:5px;
+  margin:0 0 5px;
+ }
+ 
+ label:hover {
+  background:#eee;
+  cursor:pointer;
+ }
+
+.border-jy {
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin: 0 0 5px;
+}
+
+.light-bg {
+    background-color: #F4F4F4;
+}
+
+.dark-bg {
+    background-color: #DCDCDC;
+}
+
+.tray-block {
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.notes {
+    display: inline-block;
+    width: 100%;
+    min-height: 100px;
+    max-width: 100%;
+}
+
+.icon-div-padding {
+    padding-top: 2.5%
+}
+
+.temp {
+    position: fixed;
+    width: 100%;
+    z-index: 10;
+}

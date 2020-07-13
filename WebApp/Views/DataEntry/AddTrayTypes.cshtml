@@ -1,0 +1,111 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.TrayTypeViewModel>
+
+@{
+    ViewData["Title"] = "Add Tray Types";
+}
+
+@section Scripts {
+<script>
+        var itemCount = 1;
+
+        function addItem() {
+            var newItemStr = `<div class="well" id="item-${itemCount}">
+                        @Html.Hidden("model.Index", "${itemCount}", new { Id = "model.Index" })
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.FirstOrDefault().Type)
+                            @Html.TextBox("model[${itemCount}].Type", "", new { @class = "form-control", Id = "model[${itemCount}].Type" })
+                        </div>
+                        @Html.Hidden("model[${itemCount}].Active", true, new { Id = "model[${itemCount}].Active" })
+                        @Html.Hidden("model[${itemCount}].CreatedBy", User.Identity.Name, new { Id = "model[${itemCount}].CreatedBy" })
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-item-${itemCount}" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            `;
+            var newItem = $($.parseHTML(newItemStr));
+            $(`#item-${itemCount - 1}`).after(newItem);
+            $(`#remove-item-${itemCount}`).on("click", removeItem);
+            itemCount++;
+        }
+
+        function removeItem() {
+            var itemId = this.id.replace("remove-item-", "");
+            $(`#item-${itemId}`).remove();
+            itemCount--;
+            // Re-number item info
+            $("[id^='item-']").each(function (index, element) {
+                $(element).prop("id", `item-${index}`);
+            });
+
+            $("[id^='item-']").each(function (index) {
+                $(this).find("[name='model.Index']").val(index)
+                $(this).prop("id", `item-${index}`);
+                $(this).find("[id^='remove-item-']").each(function (idx) {
+                    var id = $(this)[0].id;
+                    id = id.replace(/\d+/, `${index}`);
+                    $(this).prop("id", id);
+                });
+                $(this).find("[name^='model[']").each(function (idx) {
+                    var name = $(this)[0].name;
+                    name = name.replace(/model\[\d+\]/, `model[${index}]`);
+                    $(this).prop("name", name);
+                });
+                $(this).find("[data-valmsg-for^='[']").each(function (idx) {
+                    var name = $(this).attr("data-valmsg-for");
+                    name = name.replace(/\[\d+\]\./, `[${index}].`);
+                    $(this).attr("data-valmsg-for", name);
+                });
+                $(this).find("[for^='z']").each(function (idx) {
+                    var name = $(this).attr("for");
+                    name = name.replace(/z\d+__/, `z${index}__`);
+                    $(this).attr("for", name);
+                });
+                $(this).find("[id^='z']").each(function (idx) {
+                    var id = $(this)[0].id;
+                    id = id.replace(/z\d+__/, `z${index}__`);
+                    $(this).prop("id", id);
+                });
+            });
+        }
+
+        $(document).ready(function () {
+            $("#add-item").on("click", addItem);
+        });
+</script>
+
+}
+
+<h2>Add Tray Types</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form id="add-menu" asp-controller="DataEntry" asp-action="AddTrayTypes" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="well" id="item-0">
+                    @Html.Hidden("model.Index", 0, new { Id = $"model.Index" })
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.FirstOrDefault().Type)
+                        @Html.TextBox($"model[0].Type", "", new { @class = "form-control", Id = $"model[0].Type" })
+                    </div>
+                    @Html.Hidden("model[0].Active", true, new { Id = "model[0].Active" })
+                    @Html.Hidden("model[0].CreatedBy", User.Identity.Name, new { Id = "model[0].CreatedBy" })
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                            <button type="button" class="btn btn-info glyphicon glyphicon-plus" id="add-item" aria-label="add"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

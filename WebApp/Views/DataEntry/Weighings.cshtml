@@ -1,0 +1,1265 @@
+﻿@using SaladBarWeb.Models.DataEntryViewModels
+@using SaladBarWeb.DBModels
+@using System.Text
+
+@model DataEntryViewModel
+
+
+@{
+    ViewData["Title"] = "Weighings";
+    var isLight = false;
+    var interventionDayTrayTypesSelectList = ((List<InterventionDayTrayTypes>)ViewBag.InterventionDayTrayTypes)
+            .Select(x => new SelectListItem { Text = x.TrayType.Type, Value = x.Id.ToString() });
+    var weighings = (IEnumerable<Weighings>)ViewBag.Weighings;
+    var missingTrayTypesSelectList = ((List<string>)ViewBag.MissingTrayTypes)
+        .Select(x => new SelectListItem { Text = x, Value = x });
+    var duplicateImageOptionsSelectList = ((List<SaladBarWeb.DBModels.DuplicateImageOptions>)ViewBag.DuplicateImageOptions)
+                            .Select(x => new SelectListItem { Text = x.Type, Value = x.Id.ToString() });
+
+    var strPre = new StringBuilder();
+    var strPost = new StringBuilder();
+
+    strPre.Append($@"<div class=""other-info-menu-item"">");
+    strPost.Append($@"<div class=""other-info-menu-item"">");
+
+    foreach (var itemType in Model.MenuItemTypes)
+    {
+        strPre.Append($@"<div class=""other-info-menu-item-{(itemType.Type.ToLower())}"">");
+        strPost.Append($@"<div class=""other-info-menu-item-{(itemType.Type.ToLower())}"">");
+
+        var menuItemTypeName = $"{itemType.Type}[weighing-id]";
+        var sectionLabel = itemType.Type;
+
+        strPre.Append($@"<h4 class=""bg-primary text-center"" name=""{menuItemTypeName}"" style=""border-width:2px;border-style:solid;"">{sectionLabel}</h4>");
+
+        if (!itemType.Type.Contains("Beverage", StringComparison.OrdinalIgnoreCase) && !itemType.Type.Contains("Miscellaneous", StringComparison.OrdinalIgnoreCase))
+        {
+            sectionLabel += " Consumed";
+        }
+        strPost.Append($@"<h4 class=""bg-primary text-center"" name=""{menuItemTypeName}"" style=""border-width:2px;border-style:solid;"">{sectionLabel}</h4>");
+
+        foreach (var menuItem in Model.MenuItems)
+        {
+            if (menuItem.MenuItemTypeId == itemType.Id)
+            {
+                var selected = false;
+                var quantity = "";
+
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.Index"" value=""{menuItem.Id}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItemId"" value=""{menuItem.Id}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.CreatedBy"" value=""{ViewBag.UserName}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.Id"" value=""{menuItem.Id}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.MenuId"" value=""{menuItem.MenuId}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.MenuItemTypeId"" value=""{menuItem.MenuItemTypeId}"">");
+                strPre.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.Name"" value=""{menuItem.Name}"">");
+
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.Index"" value=""{menuItem.Id}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItemId"" value=""{menuItem.Id}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.CreatedBy"" value=""{ViewBag.UserName}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.Id"" value=""{menuItem.Id}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.MenuId"" value=""{menuItem.MenuId}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.MenuItemTypeId"" value=""{menuItem.MenuItemTypeId}"">");
+                strPost.Append($@"<input type=""hidden"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems.MenuItem.Name"" value=""{menuItem.Name}"">");
+
+                if (menuItem.Quantifiable)
+                {
+                    var tabIndexEscape = "tabindex = -1";
+                    if (!((menuItem.MenuItemTypeId != 4 && menuItem.MenuItemTypeId != 5) || menuItem.Name.Contains("Milk", StringComparison.OrdinalIgnoreCase) || menuItem.Name.Contains("Utensil", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        tabIndexEscape = "";
+                    }
+
+                    strPre.Append($@"<label>");
+                    strPost.Append($@"<label>");
+
+                    strPre.Append($@"<input type=""checkbox"" {(selected ? "checked" : "")} name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"" {tabIndexEscape} value=""true"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected""> {menuItem.Name}");
+                    strPost.Append($@"<input type=""checkbox"" {(selected ? "checked" : "")} name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"" {tabIndexEscape} value=""true"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected""> {menuItem.Name}");
+
+                    // If it's pre-lunch, show the regular number text box; else if it's post-lunch, show the dropbox list for consumption level
+                    strPre.Append($@"<input type=""number"" value=""{quantity}"" name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}]-qty"" class=""form-control"">");
+
+                    if (menuItem.MenuItemTypeId != 4 && menuItem.MenuItemTypeId != 5)
+                    {
+                        strPost.Append($@"<select name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}]-qty"" class=""form-control"">
+                            <option value="""" selected>-- Consumed Percentage-- </option>
+                            <option value=""0"">0%</option>
+                            <option value=""25"">1 - 25%</option>
+                            <option value=""50"">26 - 50%</option>
+                            <option value=""75"">51 - 75%</option>
+                            <option value=""99"">76 - 99%</option>
+                            <option value=""100"">100%</option>
+                            <option value=""-777"">Unobservable</option>
+                            <option value=""-999"">Missing</option>
+                        </select>");
+                    }
+                    else if (menuItem.MenuItemTypeId == 4)
+                    {
+                        strPost.Append($@"<select name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}]-qty"" class=""form-control"">
+                            <option value="""" selected>-- Select an Option --</option>
+                            <option value=""1"">Opened</option>
+                            <option value=""2"">Unopened</option>
+                            <option value=""-777"">Unobservable</option>
+                            <option value=""-999"">Missing</option>
+                        </select>");
+                    }
+                    else if (menuItem.Name.Contains("Utensil", StringComparison.OrdinalIgnoreCase))
+                    {
+                        strPost.Append($@"<select name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}]-qty"" class=""form-control"">
+                            <option value="""" selected>-- Select an Option --</option>
+                            <option value=""1"">1 Item</option>
+                            <option value=""2"">2 Items</option>
+                            <option value=""3"">3 Items</option>
+                            <option value=""4"">4 Items</option>
+                            <option value=""5"">5+ Items</option>
+                            <option value=""6"">Unopened</option>
+                        </select>");
+                    }
+                    strPre.Append($@"</label>");
+                    strPost.Append($@"</label>");
+                }
+                else
+                {
+                    strPre.Append($@"<label>");
+                    strPre.Append($@"<input type=""checkbox"" {(selected ? "checked" : "")} name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"" value=""true"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"">{menuItem.Name}");
+                    strPre.Append($@"</label>");
+
+                    strPost.Append($@"<label>");
+                    strPost.Append($@"<input type=""checkbox"" {(selected ? "checked" : "")} name=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"" value=""true"" id=""model.WeighingMeasurements[weighing-id].WeighingMeasurementMenuItems[{menuItem.Id}].Selected"">{menuItem.Name}");
+                    strPost.Append($@"</label>");
+                }
+            }
+        }
+
+        strPre.Append($@"</div>");
+        strPost.Append($@"</div>");
+    }
+}
+
+@section Stylesheets {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="~/css/starter-template.css" rel="stylesheet">
+}
+
+<!--Purposely loading this into the document first-->
+<script>
+    function selectDropdown(id, value) {
+        if (value !== undefined) {
+            var element = document.getElementById(id);
+            element.value = value;
+        }
+    }
+</script>
+
+@section Scripts {
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="~/js/jquery.zoom.min.js"></script>
+    <script src="~/js/jquery.are-you-sure.js"></script>
+    <script src="~/js/jQueryRotate.js"></script>
+
+    <script>
+        var missingTrayCount = 1;
+        var trayCountDict = {};
+        var startTime = 0;
+        var endTime = 0;
+
+        var errorsStr = "@ViewBag.Errors";
+        var errors = errorsStr == "" ? [] : errorsStr.split(",");
+        if (errors != []) {
+            errors.forEach(function (error) {
+                $(`[name='${error}']`).css({ "border-color": "red" });
+            });
+        }
+
+        function addMissingTray() {
+            var indexValues = $("input[name='model.WeighingMeasurementGlobalInfoItems.Index']").map(function () {
+                return $(this).val();
+            }).toArray();
+            var maxIndexValue = Math.max(...indexValues) + 1;
+            var globalInfoItemId = $('#missing-tray-0').data('global-info-item-index');
+            var newMissingTrayStr =
+                `<div class="row" id="missing-tray-${maxIndexValue}">
+                    <input type="hidden" name="model.WeighingMeasurementGlobalInfoItems.Index" value=${maxIndexValue}>
+                    <input type="hidden" name="model.WeighingMeasurementGlobalInfoItems[${maxIndexValue}].RandomizedStudentId" value=@(ViewBag.FirstAvailableRandomizedStudentRowId)>
+                    <input type="hidden" name="model.WeighingMeasurementGlobalInfoItems[${maxIndexValue}].CreatedBy" value=@(ViewBag.UserName)>
+                    <input type="hidden" name="model.WeighingMeasurementGlobalInfoItems[${maxIndexValue}].GlobalInfoItemId" value=${globalInfoItemId}>
+
+                    <div class="col-xs-5 col-xs-offset-3 col-sm-4 col-sm-offset-4 col-md-3 col-md-offset-4">
+                        <label>
+                            <span class="label label-warning missing-tray-label">Missing Tray 0</span>
+                            Photo Type:
+                            @Html.DropDownList("model.WeighingMeasurementGlobalInfoItems[${maxIndexValue}].Value", missingTrayTypesSelectList, "-- Tray Type --", new { @class = "form-control", Id = "model.WeighingMeasurementGlobalInfoItems[${maxIndexValue}].Value" })
+                            <span class="btn-group btn-group-sm" role="group" aria-label="...">
+                                <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-missing-tray-${maxIndexValue}" aria-label="remove"></button>
+                            </span>
+                        </label>
+                    </div><!-- /.row/col -->
+                </div><!-- /.row -->`;
+            var newMissingTray = $($.parseHTML(newMissingTrayStr));
+            $("div[id|=missing-tray]").last().after(newMissingTray);
+            $(`#remove-missing-tray-${maxIndexValue}`).on("click", removeMissingTray);
+            // Re-number the missing tray label name
+            $("div[id|='missing-tray'] .missing-tray-label").each(function (idx) {
+                $(this).text(`Missing Tray ${idx + 1}`);
+            });
+        }
+
+        function removeMissingTray() {
+            var trayNumber = this.id.replace("remove-missing-tray-", "");
+            $(`#missing-tray-${trayNumber}`).remove();
+            // Re-number the missing tray label name
+            $("div[id|='missing-tray'] .missing-tray-label").each(function (idx) {
+                $(this).text(`Missing Tray ${idx + 1}`);
+            });
+        }
+
+        function addTray() {
+            var internalTrayId = this.id.replace("add-tray-", "");
+            if(trayCountDict[internalTrayId] === undefined) {
+                trayCountDict[internalTrayId] = 1;
+            }
+            trayCountDict[internalTrayId] += 1;
+            var trayNumber = trayCountDict[internalTrayId];
+            var newTrayStr = `<div class="border-jy" id="tray-${internalTrayId}-${trayNumber}">
+                        <input type="hidden" name="model.WeighingMeasurements[${internalTrayId}].WeighingMeasurementTrays.Index" value="${trayNumber}">
+                        <input type="hidden" name="model.WeighingMeasurements[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].CreatedBy" value=@ViewBag.UserName>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-2 col-md-1">
+                                <h2 class="label label-info tray-label">Tray ${trayNumber}</h2>
+                            </div>
+                            <div class="col-xs-12 col-sm-8 col-md-8">
+                                <label>
+                                    Tray Type*
+                                    @Html.DropDownList("model.WeighingMeasurements[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].InterventionDayTrayTypeId", interventionDayTrayTypesSelectList, "-- Tray Type --", new { @class = "form-control", Id = "model.WeighingMeasurements[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].InterventionDayTrayTypeId" })
+                                </label>
+                            </div>
+                        </div >
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6 col-sm-push-2 col-md-push-1">
+                                <label>Quantity <input class="form-control input-sm" type="text" name="model.WeighingMeasurements[${internalTrayId}].WeighingMeasurementTrays[${trayNumber}].Quantity"></label>
+                            </div>
+                            <div class="col-xs-12 col-sm-1 col-sm-pull-6 col-md-pull-6">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-tray-${internalTrayId}-${trayNumber}" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div >`;
+            var newTray = $($.parseHTML(newTrayStr));
+            $(`#trays-${internalTrayId} .border-jy:last`).after(newTray);
+            $(`#remove-tray-${internalTrayId}-${trayNumber}`).on("click", removeTray);
+            // Re-number the tray label name
+            $(`#trays-${internalTrayId} .tray-label`).each(function (idx) {
+                $(this).text(`Tray ${idx + 1}`);
+            });
+        }
+
+        function removeTray() {
+            var id = this.id.replace("remove-tray-", "").split("-");
+            var internalTrayId = id[0];
+            var trayNumber = id[1];
+
+            $(`#tray-${internalTrayId}-${trayNumber}`).remove();
+            //this.closest('.border-jy').remove();
+            // Re-number the tray label name
+            $(`#trays-${internalTrayId} .tray-label`).each(function (idx) {
+                $(this).text(`Tray ${idx + 1}`);
+            });
+        }
+
+        $('.imageContainer img').data('rotation', 0);
+
+        // Modified from http://jsfiddle.net/xcnas330/
+        function rotateImage() {
+            var imageId = this.id.replace("_rotate", "");
+            var image = `#${imageId}`;
+            var zoomedImage = $(image).next();
+
+            var ort = $(image).data('rotation');
+            var rt = $(image).data('rotation') + 90;
+            if (rt > 270) {
+                rt = 0;
+            }
+            $(image).data('rotation', rt);
+            if (rt % 180) {
+                var o = '';
+                if (rt == 90) {
+                    var val = ($(image).height() + $(image).width()) / 4;
+                    o = `${val}px ${val}px`;
+                }
+                else {
+                    o = '332px 205px'
+                }
+
+                $(image).removeAttr('class').addClass('r' + rt).rotate({ angle: ort, animateTo: rt, center: o });
+                $(image).css({
+                    'width': '100%',
+                    'max-width': '',
+                    'height': '',
+                    'max-height': 'auto'
+                });
+                $(image).parent().animate({
+                    height: $(image).width()
+                }, 500, null);
+
+                zoomedImage.rotate({ angle: 0, center: ['50%', '50%'] });
+            } else {
+                $(image).removeAttr('class').addClass('r' + rt).rotate({ angle: ort, animateTo: rt, center: ['50%', '50%'] });
+                $(image).css({
+                    'width': '',
+                    'max-width': '100%',
+                    'height': 'auto',
+                    'max-height': ''
+                });
+                $(image).parent().animate({
+                    height: $(image).height()
+                }, 500, null);
+
+                zoomedImage.rotate({ angle: rt, center: ['50%', '50%'] });
+            }
+        }
+
+        // Adding tracking data
+        function addTimeTrackingElement(info) {
+            $("[name='model.WeighingMeasurements.Index']").each(function () {
+                var modelId = $(this).val();
+                var timeTrackingElement = `
+                    <input type="hidden" name="model.WeighingMeasurements[${modelId}].WeighingMeasurementTracking.Index" value=${modelId}>
+                    <input type="hidden" name="model.WeighingMeasurements[${modelId}].WeighingMeasurementTracking[${modelId}].Info" value=${info}>
+                    <input type="hidden" name="model.WeighingMeasurements[${modelId}].WeighingMeasurementTracking[${modelId}].CreatedBy" value=@ViewBag.UserName>`;
+                $("#time-tracking").append(timeTrackingElement);
+            });
+        }
+
+        // TODO: Add requirement check for notes
+        // Pre-filling and removing infomation for duplicate image
+        function duplicateImage(dropdownElement, checkboxElement) {
+            var prefixId = "#" + $(checkboxElement).attr('id').replace(/WeighingMeasurementImageMetadata.*/g, "");
+            // Image type dropdown
+            var imageTypeId = `${prefixId}ImageTypeId`.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+            // Tray type dropdown
+            var weighingMeasurementTrayId = `${prefixId}WeighingMeasurementTrays[1].InterventionDayTrayTypeId`.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+            // Tray type quantity
+            var weighingMeasurementTrayQuantityId = `${prefixId}WeighingMeasurementTrays[1].Quantity`.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+            // Weight
+            var weightId = `${prefixId}Weight`.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+            // The otherInfo class div tag that's closest to the weight
+            var otherInfo = $(weightId).parent().parent().next();
+            // All the "None" within this image's otherInfo div
+            var nones = otherInfo.find("label:contains('None')");
+            var options = $(dropdownElement).text();
+            // The text of the label/checkbox
+            var labelText = $(checkboxElement).parent().text();
+
+            // If true, this means it is the duplicate image element
+            if (options.includes("Blurry")) {
+                var dropdownVal = $(dropdownElement).val()
+                // This means the duplicate option is checked and an option was selected
+                if (dropdownVal !== "" && $(checkboxElement).prop("checked") === true) {
+                    $(imageTypeId).val(1);
+                    $(`${weighingMeasurementTrayId} option`).filter(function () {
+                        if (this.text === "No Tray") {
+                            $(weighingMeasurementTrayId).val($(this).val());
+                        }
+                    })
+                    $(weighingMeasurementTrayQuantityId).val(-222);
+                    $(weightId).val(-222);
+                    // Check all the "Nones"
+                    nones.each(function () {
+                        $(this.children).prop("checked", true);
+                    });
+                }
+                else if (dropdownVal === "" && $(checkboxElement).prop("checked") === false) {
+                    var weight = parseInt($(weightId).val());
+                    if (weight === -222) {
+                        // Clear all values and clear check marks
+                        $(imageTypeId).val("");
+                        $(weighingMeasurementTrayId).val("");
+                        $(weighingMeasurementTrayQuantityId).val("");
+                        $(weightId).val("");
+                        nones.each(function () {
+                            $(this.children).prop("checked", false);
+                        });
+                    }
+                }
+            }
+            // If "Does not belong in set"
+            else if (labelText.includes("Belong in Set")) {
+                if ($(checkboxElement).prop("checked") === true) {
+                    $(imageTypeId).val(1);
+                    $(`${weighingMeasurementTrayId} option`).filter(function () {
+                        if (this.text === "No Tray") {
+                            $(weighingMeasurementTrayId).val($(this).val());
+                        }
+                    })
+                    $(weighingMeasurementTrayQuantityId).val(-111);
+                    $(weightId).val(-111);
+                    // Check all the "Nones"
+                    nones.each(function () {
+                        $(this.children).prop("checked", true);
+                    });
+                }
+                else {
+                    // Clear all values and clear check marks
+                    $(imageTypeId).val("");
+                    $(weighingMeasurementTrayId).val("");
+                    $(weighingMeasurementTrayQuantityId).val("");
+                    $(weightId).val("");
+                    nones.each(function () {
+                        $(this.children).prop("checked", false);
+                    });
+                }
+            }
+        }
+
+        $(document).ready(function () {
+            $('.imageContainer img')
+                .parent()
+                .zoom({ on: 'click' });
+
+            $('imageEditor').on('reset', function (e) {
+                setTimeout(function () {
+                    editImage();
+                }, 100);
+            });
+
+            // editing image via css properties
+            function editImage() {
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+
+                var br = $(obj_brightness).val(); // brightness
+                var ct = $(obj_contrast).val(); // contrast
+
+                // Modify current display's brightness/contrast
+                $('.imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                $('.imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                // Modify zoomed photo's brightness/contrast
+                var zoomedImage = $(obj_image).next();
+
+                zoomedImage.css(
+                    'filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                zoomedImage.css(
+                    '-webkit-filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+            }
+
+            function resetImage() {
+                var default_value = 100;
+
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+                var zoomedImage = $(obj_image).next();
+
+                $(obj_brightness).val(default_value); // brightness
+                $(obj_contrast).val(default_value); // contrast
+
+                // Reset current display's brightness/contrast
+                $('.imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                $('.imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                // Reset zoomed photo's brightness/contrast
+                zoomedImage.css(
+                    'filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                zoomedImage.css(
+                    '-webkit-filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                var ort = $(obj_image).getRotateAngle()
+                if (ort > 0) {
+                    $(obj_image).removeAttr('class').addClass('r0').rotate({ angle: ort, animateTo: 0, center: ['50%', '50%'] });
+                    $(obj_image).data('rotation', 0);
+
+                    $(obj_image).parent().animate({
+                        height: $(obj_image).height()
+                    }, 500, null);
+
+                    zoomedImage.rotate({ angle: 0, center: ['50%', '50%'] });
+                }
+            }
+
+            // When sliders change image will be updated via editImage() function
+            $("input[type=range]").change(editImage).mousemove(editImage);
+            $("button[name*='_reset']").on('click', resetImage);
+
+            $("button[name*='_rotate']").on('click', rotateImage);
+
+            $("#add-missing-tray").on("click", addMissingTray);
+
+            // Add additional trays in the tray info block
+            $("[id^='add-tray']").on("click", addTray);
+
+            // Disable scroll on input type number, which is to prevent changing the value with scroll
+            $("form").on("wheel", "input[type=number]", function (e) {
+                $(this).blur();
+            });
+
+            // When the item's textbox is focused, check the checkbox automatically
+            $("[id$='qty']").focus(function () {
+                var checkboxId = "#" + this.id.replace("-qty", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                $(checkboxId).prop("checked", true);
+            });
+
+            // TODO: Need to disallow "e" to be enter in the textbox
+            // When the item's textbox is out of focus, see if the checkmark is still needed.
+            $("[id$='qty']").focusout(function () {
+                var checkboxId = "#" + this.id.replace("-qty", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var val = $(this).val();
+                var valInt = parseInt(val);
+                if (val === "") {
+                    $(checkboxId).prop("checked", false);
+                }
+                else if (isNaN(valInt)) {
+                    // TODO: Add validation message here.
+                }
+                else if (valInt < 1) {
+                    // If the target type is number, go ahead and uncheck it
+                    // else since 0% for the dropdown list is allowed, leave the check mark alone.
+                    if (this.type !== "select-one") {
+                        $(checkboxId).prop("checked", false);
+                    }
+                    else {
+                        $(checkboxId).prop("checked", true);
+                    }
+                }
+            });
+
+            // When the item's checkbox is out of focus, uncheck it if no value is in textbox, unless there's no textbox
+            // The jQuery selector looks for an input element who's id contains "WeighingMeasurementMenuItems" and ends with "Selected"
+            $("input[id*='WeighingMeasurementMenuItems'][id$='Selected']").focusout(function () {
+                var textBoxId = "#" + this.id.replace(".Selected", "-qty");
+                textBoxId = textBoxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var textBoxElement = $(textBoxId);
+                if (textBoxElement.length === 1) {
+                    var textBoxValue = textBoxElement.val();
+                    var textBoxIntValue = parseInt(textBoxValue);
+                    if (textBoxValue === "") {
+                        $(this).prop("checked", false);
+                    }
+                    else if (isNaN(textBoxIntValue)) {
+                        // TODO: Add validation message here.
+                    }
+                    else if (textBoxIntValue < 1) {
+                        // If the target type is number, go ahead and uncheck it
+                        // else since 0% and other negative flags from the dropdown list is allowed, leave the check mark checked.
+                        if (textBoxElement[0].type !== "select-one") {
+                            $(this).prop("checked", false);
+                        }
+                        else {
+                            $(this).prop("checked", true);
+                        }
+                    }
+                    else {
+                        $(this).prop("checked", true);
+                    }
+                }
+            });
+
+            // Specifically for ImageMetadata
+            // (The jQuery selector looks for select elements who's id contains "WeighingMeasurementImageMetadata" and ends with "Value")
+            // When the item's dropdown is focused, check the checkbox automatically
+            $("select[id*='WeighingMeasurementImageMetadata'][id$='Value']").focus(function () {
+                var checkboxId = "#" + this.id.replace(".Value", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                $(checkboxId).prop("checked", true);
+            });
+
+            // Specifically for ImageMetadata
+            // (The jQuery selector looks for select elements who's id contains "WeighingMeasurementImageMetadata" and ends with "Value")
+            // When the item's dropdown is out of focus, see if the checkmark is still needed.
+            $("select[id*='WeighingMeasurementImageMetadata'][id$='Value']").focusout(function () {
+                var checkboxId = "#" + this.id.replace(".Value", ".Selected");
+                checkboxId = checkboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var dropdownVal = $(this).val();
+                if (dropdownVal === "") {
+                    $(checkboxId).prop("checked", false);
+                }
+                duplicateImage(this, checkboxId);
+            });
+
+            // Specifically for ImageMetadata
+            // (The jQuery selector looks for input elements who's id contains "WeighingMeasurementImageMetadata" and ends with "Selected")
+            // When the item's checkbox is out of focus, uncheck it if no valid dropdown option is selected
+            $("input[id*='WeighingMeasurementImageMetadata'][id$='Selected']").focusout(function () {
+                var dropdownId = "#" + this.id.replace(".Selected", ".Value");
+                dropdownId = dropdownId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var dropdownVal = $(dropdownId).val();
+                if (dropdownVal !== undefined) {
+                    if (dropdownVal === "") {
+                        $(this).prop("checked", false);
+                    }
+                    else {
+                        $(this).prop("checked", true);
+                    }
+                }
+                duplicateImage(dropdownId, this);
+            });
+
+            // TODO: Add this code into the tray type option that's created dynamically with JavaScript
+            // When the tray type dropdown list changes, check to see if it's "No Tray".
+            // If it is, go ahead and change the quantity to 0.
+            $("[id$='InterventionDayTrayTypeId']").change(function () {
+                var quantityTextboxId = "#" + this.id.replace("InterventionDayTrayTypeId", "Quantity");
+                quantityTextboxId = quantityTextboxId.replace(/(:|\.|\[|\]|,|=)/g, "\\$1");
+                var trayTypeSelectedval = $(this).find(':selected').text();
+                if (trayTypeSelectedval === "No Tray") {
+                    $(quantityTextboxId).val(0);
+                }
+                else {
+                    $(quantityTextboxId).val("");
+                }
+            });
+
+            // (The jQuery selector looks for input elements who's id ends with "WeighStationTypeId")
+            $("[id$='WeighStationTypeId']").change(function () {
+                var weighingId = this.id.replace(/^\D+/g, '').replace(/\D+$/g, '');
+                if (this.value === "1") {
+                    var otherInfoMenuItem = $(this.parentElement.parentElement).siblings('.other-info').children[0];
+                    otherInfoMenuItem.empty();
+                    var preLunchMenuItems = `@(@Html.Raw(@strPre.ToString()))`;
+                    preLunchMenuItems = preLunchMenuItems.replace(/weighing-id/gi, weighingId);
+                    otherInfoMenuItem.append(preLunchMenuItems);
+                }
+                else if (this.value === "2") {
+                    var otherInfoMenuItem = $(this.parentElement.parentElement).siblings('.other-info').children[0];
+                    otherInfoMenuItem.empty();
+                    var postLunchMenuItems = `@(@Html.Raw(@strPost.ToString()))`;
+                    postLunchMenuItems = postLunchMenuItems.replace(/weighing-id/gi, weighingId);
+                    otherInfoMenuItem.append(postLunchMenuItems);
+                }
+            });
+
+            // Putting actual tracking info into the form to be
+            // submitted to the server
+            $("#data-entry-submit").on("click", function () {
+                endTime = new Date().getTime();
+                var infoData = {
+                    "StartTime": startTime,
+                    "EndTime": endTime
+                };
+                var infoStr = JSON.stringify(infoData);
+                addTimeTrackingElement(infoStr);
+                console.log(endTime - startTime);
+            })
+
+            // Setting the start time when the page is loaded
+            startTime = new Date().getTime();
+
+            // This is for the image to move with the page scroll
+            //$(window).scroll(function () {
+            //    var div1 = $(".navbar");
+            //    var div2 = $("#image12");
+            //    var div1_top = div1.offset().top;
+            //    var div2_top = div2.offset().top;
+            //    var div1_bottom = div1_top + div1.height();
+            //    var div2_bottom = div2_top + div2.height();
+
+            //    var bottomPos = $(window).scrollTop() + $(window).height();
+
+            //    console.log("NavBar Top " + div1_top);
+            //    console.log("Image Top " + div2_top);
+
+            //    if (div1_bottom >= div2_top && div1_top < div2_bottom) {
+            //        var preDiv2Top = div2.position().top;
+            //        div2.css("top", `${preDiv2Top + 5}px`);
+            //    } else {
+            //        $("#result").html("");
+            //    }
+
+            //    //if (bottomPos <= div2_bottom) {
+            //    //    var preDiv2Top = div2.position().top;
+            //    //    div2.css("top", preDiv2Top - div1.height());
+            //    //}
+            //});
+            var timeout;
+
+            function warning() {
+                timeout = setTimeout(function () {
+                }, 1000);
+                return "You have some unsaved data, are you sure you want to leave?";
+            }
+
+            function noTimeout() {
+                clearTimeout(timeout);
+            }
+            /*
+            window.onbeforeunload = warning;
+            window.unload = noTimeout;
+            window.onunload = function () {
+                console.log("GoodBye...");
+                //testUnload();
+            }
+            */
+
+            $('#weighing-measurement').areYouSure(
+                {
+                    message: 'It looks like you have been editing something. '
+                        + 'If you leave before saving, your changes will be lost.'
+                }
+            );
+        });
+
+        function testUnload() {
+            let headers = {
+                type: "application/x-www-form-urlencoded; charset=UTF-8"
+            };
+
+            let blob = new Blob([$("#weighing-measurement").serialize()], headers);
+            navigator.sendBeacon('Weighings?schoolId=10&interventionDayId=5', blob);
+
+
+            // Need to send synchronously to have the best chance of data getting
+            // through to the server
+            //var xhr = new XMLHttpRequest();
+            //xhr.open('POST', 'Weighings?schoolId=10&interventionDayId=5', false);
+            //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            //xhr.send($("#weighing-measurement").serialize());
+
+
+            //navigator.sendBeacon = navigator.sendBeacon || function (url, data) {
+            //    var xhr = new XMLHttpRequest();
+
+            //    // Need to send synchronously to have the best chance of data getting
+            //    // through to the server
+            //    xhr.open('POST', 'Weighings?schoolId=10&interventionDayId=5', false);
+            //    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            //    xhr.send($("#weighing-measurement").serialize());
+            //};
+        }
+
+        function testAjax() {
+            $.ajax({
+                url: "Weighings?schoolId=10&interventionDayId=5",
+                type: "post",
+                data: $("#weighing-measurement").serialize()
+            })
+            .done(function (data) {
+                console.log("success");
+                console.log(data);
+            })
+            .fail(function (err) {
+                console.log(`Error...${err}`);
+            })
+            .always(function () {
+                console.log("complete");
+            });
+        }
+    </script>
+}
+
+<h2>Data Entry</h2>
+
+<ol class="breadcrumb">
+    Navigation:
+    <li>@Html.ActionLink("Schools", "Index", "DataEntry")</li>
+    <li>@Html.ActionLink((string)ViewBag.SchoolName, "DataEntryMeasurementDays", "DataEntry", new { schoolId = (int)ViewBag.SchoolId })</li>
+    <li class="active">@ViewBag.SchoolName @ViewBag.MeasurementDate.ToString("MM/dd/yyyy")</li>
+</ol>
+
+<div class="main-container">
+    @if (ViewBag.Message != null)
+    {
+        if (((string)ViewBag.Message).Contains("successfully", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="alert alert-success" role="alert">@ViewBag.Message</div>
+        }
+        else
+        {
+            <div class="alert alert-danger" role="alert">@ViewBag.Message</div>
+        }
+    }
+
+    @if (ViewBag.Error == null || ViewBag.Error == false)
+    {
+        <span>Remaining Randomized Student Count:  @ViewBag.RandomizedStudentsCount</span>
+        <div>
+            <h4>
+                Student ID: @ViewBag.FirstAvailableRandomizedStudentStudentId<br />
+                School: @ViewBag.SchoolName<br />
+                Date of Visit: @ViewBag.MeasurementDate.ToString("MM/dd/yyyy")
+            </h4>
+            <h5>Image Count: 4(Expected) / @(weighings.Count())(Actual)</h5>
+        </div>
+        <!--No JavaScript enabled alert-->
+        <noscript>
+            <div class="alert alert-danger">
+                <strong>Error!</strong> JavaScript is not enabled! Please enable it before continuing. Contact John if you don't know what to do.
+            </div>
+        </noscript>
+        <!--Controls for CSS filters via range input-->
+        <div>
+            <form id="weighing-measurement" asp-controller="DataEntry" asp-action="Weighings" asp-route-schoolId="@ViewBag.SchoolId" asp-route-interventionDayId="@ViewBag.InterventionDayId" method="post">
+                @foreach (var itemType in Model.MenuItemTypes)
+                {
+                    <input type="hidden" name="@($"model.MenuItemTypes.Index")" value="@($"{itemType.Id}")">
+                    <input type="hidden" name="@($"model.MenuItemTypes[{itemType.Id}].Id")" value="@($"{itemType.Id}")">
+                    <input type="hidden" name="@($"model.MenuItemTypes[{itemType.Id}].Type")" value="@($"{itemType.Type}")">
+                    <input type="hidden" name="@($"model.MenuItemTypes[{itemType.Id}].Active")" value="@($"{itemType.Active}")">
+                }
+                @foreach (var menuItem in Model.MenuItems)
+                {
+                    <input type="hidden" name="@($"model.MenuItems.Index")" value="@($"{menuItem.Id}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].Id")" value="@($"{menuItem.Id}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].MenuId")" value="@($"{menuItem.MenuId}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].MenuItemTypeId")" value="@($"{menuItem.MenuItemTypeId}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].Name")" value="@($"{menuItem.Name}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].Quantifiable")" value="@($"{menuItem.Quantifiable}")">
+                    <input type="hidden" name="@($"model.MenuItems[{menuItem.Id}].Active")" value="@($"{menuItem.Active}")">
+                }
+                @foreach (var imageMetadataItem in Model.ImageMetadata)
+                {
+                    <input type="hidden" name="@($"model.ImageMetadata.Index")" value="@($"{imageMetadataItem.Id}")">
+                    <input type="hidden" name="@($"model.ImageMetadata[{imageMetadataItem.Id}].Id")" value="@($"{imageMetadataItem.Id}")">
+                    <input type="hidden" name="@($"model.ImageMetadata[{imageMetadataItem.Id}].Name")" value="@($"{imageMetadataItem.Name}")">
+                    <input type="hidden" name="@($"model.ImageMetadata[{imageMetadataItem.Id}].Active")" value="@($"{imageMetadataItem.Active}")">
+                }
+                <div class="container">
+                    @foreach (var item in weighings)
+                    {
+                        var base64 = Convert.ToBase64String(item.Picture);
+                        var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+                        isLight = !isLight;
+                        var backgroundColorClass = isLight ? "light-bg" : "dark-bg";
+                        // Dropdown lists
+                        var weighStationTypesSelectList = ((List<WeighStationTypes>)ViewBag.WeighStationTypes)
+                            .Select(x => new SelectListItem { Text = x.Type, Value = x.Id.ToString(), Selected = item.WeighStationTypeId == x.Id });
+                        var imageTypesSelectList = ((List<SaladBarWeb.DBModels.ImageTypes>)ViewBag.ImageTypes)
+                            .Select(x => new SelectListItem { Text = x.Type, Value = x.Id.ToString() });
+
+                        WeighingMeasurementViewModel weighingMeasurement = null;
+                        var scanType = item.WeighStationTypeId;
+                        var imageType = 0;
+
+                        try
+                        {
+                            weighingMeasurement = Model.WeighingMeasurements
+                                .Where(x => x.WeighingId == item.Id)
+                                .FirstOrDefault();
+                            scanType = weighingMeasurement.WeighStationTypeId;
+                            imageType = weighingMeasurement.ImageTypeId;
+
+                            weighStationTypesSelectList.ToList().ForEach(x =>
+                            {
+                                if (x.Value == scanType.ToString())
+                                {
+                                    x.Selected = true;
+                                }
+                            });
+
+                            imageTypesSelectList.ToList().ForEach(x =>
+                            {
+                                if (x.Value == scanType.ToString())
+                                {
+                                    x.Selected = true;
+                                }
+                            });
+                        }
+                        catch
+                        {
+                            // Intentionally left blank
+                        }
+
+                        <div class="row tray-block">
+                            <input type="hidden" name="model.WeighingMeasurements.Index" value="@($"{item.Id}")">
+                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingId")" value="@($"{item.Id}")">
+                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].CreatedBy")" value="@ViewBag.UserName">
+                            <h3>@item.WeighStationType.Type</h3>
+                            <div class="col-xs-12 col-sm-6">
+                                <div class="imageContainer">
+                                    <img src="@imgSrc" class="img-fluid" alt="Tray Image" id="@($"image{item.Id}")">
+                                </div>
+
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title">Image Controls</h4>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-xs-4">
+                                                <label>Brightness<input id="@($"image{item.Id}_br")" name="@($"image{item.Id}_br")" type="range" min="0" max="200" value="100"></label>
+                                            </div>
+                                            <div class="col-xs-4">
+                                                <label>Contrast<input id="@($"image{item.Id}_ct")" name="@($"image{item.Id}_ct")" type="range" min="0" max="200" value="100"></label>
+                                            </div>
+                                            <div class="col-xs-4" style="margin-bottom: 2px">
+                                                <button type="button" class="btn btn-primary" id="@($"image{item.Id}_reset")" name="@($"image{item.Id}_reset")">Reset</button>
+                                            </div>
+                                            <div class="col-xs-4">
+                                                <button type="button" class="btn btn-primary" id="@($"image{item.Id}_rotate")" name="@($"image{item.Id}_rotate")">Rotate</button>
+                                            </div>
+                                        </div><!-- /.panel-body/row -->
+                                    </div><!-- /.panel-body -->
+                                </div><!-- /.panel-primary -->
+                            </div><!-- /.col -->
+                            <div class="col-xs-12 col-sm-6 image-menu-data">
+                                <div class="tray-info">
+                                    <h4 class="bg-primary text-center">Tray Info</h4>
+                                    @{
+                                        var trayId = item.WeighingTrays
+                                            .Where(x => x.WeighingId == item.Id)
+                                            .Select(x => x.TrayId)
+                                            .FirstOrDefault();
+                                        var weight = -1;
+                                        var weightValue = "";
+
+                                        try
+                                        {
+                                            weight = Model.WeighingMeasurements
+                                                .Where(x => x.WeighingId == item.Id)
+                                                .FirstOrDefault()
+                                                .Weight;
+                                        }
+                                        catch
+                                        {
+                                            // Intentionally left blank
+                                        }
+
+                                        if (weight > -1)
+                                        {
+                                            weightValue = weight.ToString();
+                                        }
+                                    }
+                                    <div class="well">
+                                        <label>
+                                            Tray ID: @trayId
+                                        </label>
+                                        <label>
+                                            Salad Dressing: @item.SaladDressing
+                                        </label>
+                                        <label>
+                                            Milk: @item.Milk
+                                        </label>
+                                        <label>
+                                            Multiple Trays: @(String.IsNullOrEmpty(@item.Multiple) ? "No data" : @item.Multiple)
+                                        </label>
+                                        <label>
+                                            Empty: @(String.IsNullOrEmpty(@item.Empty) ? "No data" : @item.Empty)
+                                        </label>
+                                        <label>
+                                            Seconds: @(String.IsNullOrEmpty(@item.Seconds) ? "No data" : @item.Seconds)
+                                        </label>
+                                        <label>
+                                            Unique: @item.UniqueSituation
+                                        </label>
+                                    </div><!-- /.well -->
+                                    <label>
+                                        Scan Type*
+                                        @Html.DropDownList($"model.WeighingMeasurements[{item.Id}].WeighStationTypeId", weighStationTypesSelectList, "-- Scan Type --", new { @class = "form-control", Id = $"model.WeighingMeasurements[{item.Id}].WeighStationTypeId" })
+                                    </label>
+                                    <label>
+                                        Image Type*
+                                        @Html.DropDownList($"model.WeighingMeasurements[{item.Id}].ImageTypeId", imageTypesSelectList, "-- Image Type --", new { @class = "form-control", Id = $"model.WeighingMeasurements[{item.Id}].ImageTypeId" })
+                                    </label>
+                                    <div id="@($"trays-{item.Id}")">
+                                        <div class="border-jy" id="@($"tray-{item.Id}-1")">
+                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays.Index")" value="1">
+                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays[1].CreatedBy")" value="@ViewBag.UserName">
+                                            <div class="row">
+                                                <div class="col-xs-12 col-sm-2 col-md-1">
+                                                    <h2 class="label label-info tray-label">Tray 1</h2>
+                                                </div>
+                                                <div class="col-xs-12 col-sm-8 col-md-8">
+                                                    <label>
+                                                        Tray Type*
+                                                        @Html.DropDownList($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays[1].InterventionDayTrayTypeId", interventionDayTrayTypesSelectList, "-- Tray Type --", new { @class = "form-control", Id = $"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays[1].InterventionDayTrayTypeId" })
+                                                    </label>
+                                                </div>
+                                            </div><!-- /.trays-#/border-jy/row -->
+                                            <div class="row">
+                                                <div class="col-xs-12 col-sm-2 col-md-1">
+                                                </div>
+                                                <div class="col-xs-12 col-sm-8 col-md-8">
+                                                    <label>Quantity* <input class="form-control input-sm" type="text" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays[1].Quantity")" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementTrays[1].Quantity")" ></label>
+                                                </div>
+                                            </div><!-- /.trays-#/border-jy/row -->
+                                        </div><!-- /.trays-#/border-jy -->
+                                    </div><!-- /.trays-# -->
+                                    <div>
+                                        <div class="row">
+                                            <div class="col-xs-12">
+                                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                                    <button type="button" class="btn btn-info glyphicon glyphicon-plus" id="@($"add-tray-{ item.Id}")" aria-label="add"></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <label>Weight(g)* <input class="form-control" type="number" value="@weightValue" name="@($"model.WeighingMeasurements[{item.Id}].Weight")" id="@($"model.WeighingMeasurements[{item.Id}].Weight")"></label>
+                                </div><!-- /.image-menu-data/tray-info -->
+                                <div class="other-info">
+                                    <div class="other-info-menu-item">
+                                        @foreach (var itemType in Model.MenuItemTypes)
+                                        {
+                                            <div class="other-info-menu-item-@(itemType.Type.ToLower())">
+                                                @{
+                                                    var menuItemTypeName = $"{itemType.Type}[{item.Id}]";
+                                                    var sectionLabel = itemType.Type;
+                                                    if (scanType != 1)
+                                                    {
+                                                        if (!itemType.Type.Contains("Beverage", StringComparison.OrdinalIgnoreCase) && !itemType.Type.Contains("Miscellaneous", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            sectionLabel += " Consumed";
+                                                        }
+                                                    }
+
+                                                    <h4 class="bg-primary text-center" name="@menuItemTypeName" style="border-width:2px;border-style:solid;">@sectionLabel</h4>
+                                                    foreach (var menuItem in Model.MenuItems)
+                                                    {
+                                                        if (menuItem.MenuItemTypeId == itemType.Id)
+                                                        {
+                                                            var selected = false;
+                                                            var quantity = "";
+
+                                                            try
+                                                            {
+                                                                var weighingMeasurementMenuItem = Model.WeighingMeasurements
+                                                                    .Where(x => x.WeighingId == item.Id)
+                                                                    .FirstOrDefault()
+                                                                    .WeighingMeasurementMenuItems
+                                                                    .Where(x => x.MenuItemId == menuItem.Id).FirstOrDefault();
+                                                                selected = weighingMeasurementMenuItem.Selected;
+                                                                quantity = weighingMeasurementMenuItem.Quantity.ToString();
+                                                            }
+                                                            catch
+                                                            {
+                                                                // Intentionally left blank
+                                                            }
+
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems.Index")" value="@($"{menuItem.Id}")">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItemId")" value="@($"{menuItem.Id}")">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].CreatedBy")" value="@(@ViewBag.UserName)">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItem.Id")" value="@($"{menuItem.Id}")">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItem.MenuId")" value="@($"{menuItem.MenuId}")">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItem.MenuItemTypeId")" value="@($"{menuItem.MenuItemTypeId}")">
+                                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].MenuItem.Name")" value="@($"{menuItem.Name}")">
+
+                                                            @if (menuItem.Quantifiable)
+                                                            {
+                                                                var tabIndexEscape = "tabindex=-1";
+                                                                if (scanType != 1 && !((menuItem.MenuItemTypeId != 4 && menuItem.MenuItemTypeId != 5) || menuItem.Name.Contains("Milk", StringComparison.OrdinalIgnoreCase) || menuItem.Name.Contains("Utensil", StringComparison.OrdinalIgnoreCase)))
+                                                                {
+                                                                    tabIndexEscape = "";
+                                                                }
+
+                                                                <label>
+                                                                    <input type="checkbox" @(selected ? "checked" : "") name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")" @tabIndexEscape value="true" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")"> @menuItem.Name
+
+                                                                    <!--If it's pre-lunch, show the regular number text box; else if it's post-lunch, show the dropbox list for consumption level-->
+                                                                    @if (scanType == 1)
+                                                                    {
+                                                                        <input type="number" value="@quantity" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity")" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")" class="form-control">
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (menuItem.MenuItemTypeId != 4 && menuItem.MenuItemTypeId != 5)
+                                                                        {
+                                                                            <select name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity")" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")" class="form-control">
+                                                                                <option value="" selected>-- Consumed Percentage-- </option>
+                                                                                <option value="0">0%</option>
+                                                                                <option value="25">1 - 25%</option>
+                                                                                <option value="50">26 - 50%</option>
+                                                                                <option value="75">51 - 75%</option>
+                                                                                <option value="99">76 - 99%</option>
+                                                                                <option value="100">100%</option>
+                                                                                <option value="-777">Unobservable</option>
+                                                                                <option value="-999">Missing</option>
+                                                                            </select>
+
+                                                                            <script>
+                                                                                selectDropdown("@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")", "@quantity");
+                                                                            </script>
+                                                                        }
+                                                                        else if (menuItem.MenuItemTypeId == 4)
+                                                                        {
+                                                                            <select name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity")" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")" class="form-control">
+                                                                                <option value="" selected>-- Select an Option --</option>
+                                                                                <option value="1">Opened</option>
+                                                                                <option value="2">Unopened</option>
+                                                                                <option value="-777">Unobservable</option>
+                                                                                <option value="-999">Missing</option>
+                                                                            </select>
+
+                                                                            <script>
+                                                                                selectDropdown("@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")", "@quantity");
+                                                                            </script>
+                                                                        }
+                                                                        else if (menuItem.Name.Contains("Utensil", StringComparison.OrdinalIgnoreCase))
+                                                                        {
+                                                                            <select name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Quantity")" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")" class="form-control">
+                                                                                <option value="" selected>-- Select an Option --</option>
+                                                                                <option value="1">1 Item</option>
+                                                                                <option value="2">2 Items</option>
+                                                                                <option value="3">3 Items</option>
+                                                                                <option value="4">4 Items</option>
+                                                                                <option value="5">5+ Items</option>
+                                                                                <option value="6">Unopened</option>
+                                                                            </select>
+
+                                                                            <script>
+                                                                                selectDropdown("@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}]-qty")", "@quantity");
+                                                                            </script>
+                                                                        }
+                                                                    }
+                                                                </label>
+                                                            }
+                                                            else
+                                                            {
+                                                                <label>
+                                                                    <input type="checkbox" @(selected ? "checked" : "") name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")" value="true" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementMenuItems[{menuItem.Id}].Selected")"> @menuItem.Name
+                                                                </label>
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="other-info-image-issues">
+                                        <h4 class="bg-primary text-center">Image Issues</h4>
+                                        @foreach (var imageMetadataItem in Model.ImageMetadata)
+                                        {
+                                            var selected = false;
+                                            var value = "0";
+
+                                            try
+                                            {
+                                                var weighingMeasurementImageMetadata = Model.WeighingMeasurements
+                                                    .Where(x => x.WeighingId == item.Id)
+                                                    .FirstOrDefault()
+                                                    .WeighingMeasurementImageMetadata
+                                                    .Where(x => x.ImageMetadataId == imageMetadataItem.Id).FirstOrDefault();
+                                                selected = weighingMeasurementImageMetadata.Selected;
+                                                value = weighingMeasurementImageMetadata.Value;
+
+                                            }
+                                            catch
+                                            {
+                                                // Intentionally left blank
+                                            }
+
+                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata.Index")" value="@($"{imageMetadataItem.Id}")">
+                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].ImageMetadataId")" value="@($"{imageMetadataItem.Id}")">
+                                            <input type="hidden" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].CreatedBy")" value="@ViewBag.UserName">
+
+                                            <label>
+                                                @{
+                                                    var tabIndexEscape = imageMetadataItem.Name == "Duplicate" ? "tabindex=-1" : "";
+                                                }
+                                                <input type="checkbox" @(selected ? "checked" : "") name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Selected")" @tabIndexEscape value="true" id="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Selected")"> @imageMetadataItem.Name
+                                                @if (imageMetadataItem.Name == "Duplicate")
+                                                {
+                                                    if (selected)
+                                                    {
+                                                        duplicateImageOptionsSelectList.ToList().ForEach(x =>
+                                                        {
+                                                            if (x.Value == value)
+                                                            {
+                                                                x.Selected = true;
+                                                            }
+                                                        });
+                                                    }
+                                                    @Html.DropDownList($"model.WeighingMeasurements[{ item.Id}].WeighingMeasurementImageMetadata[{ imageMetadataItem.Id}].Value", duplicateImageOptionsSelectList, "-- Reason --", new { @class = "form-control", Id = $"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Value" })
+                                                }
+                                                else
+                                                {
+                                                    <input type="hidden" value="@value" name="@($"model.WeighingMeasurements[{item.Id}].WeighingMeasurementImageMetadata[{imageMetadataItem.Id}].Value")">
+                                                }
+                                            </label>
+                                        }
+                                    </div>
+                                    <h4 class="bg-primary text-center">Notes</h4>
+                                    <label class="notes">Notes<textarea class="form-control notes" name="@($"model.WeighingMeasurements[{item.Id}].Notes")"></textarea></label>
+                                </div><!-- /.image-menu-data/other-info -->
+                            </div><!-- /.image-menu-data -->
+                        </div><!-- /.tray-block -->
+                    }
+                    <div class="row">
+                        <div class="col-xs-12 border-jy">
+                            <h4 class="bg-primary label-info text-center">Global Info</h4>
+                            @foreach (var globalInfoItem in ((IEnumerable<GlobalInfoItemViewModel>)ViewBag.GlobalInfoItems).Select((value, index) => new { value, index }))
+                            {
+                                var globalInfoItemId = globalInfoItem.value.Id;
+                                var globalInfoItemIndex = globalInfoItem.index;
+                                var globalInfoItemName = globalInfoItem.value.Name;
+                                var globalInfoItemType = globalInfoItem.value.Type;
+
+                                @if (globalInfoItemType == "picklist" && globalInfoItemName == "Missing Tray?")
+                                {
+                                    <div class="row center-block">
+                                        <div class="col-xs-4 col-xs-offset-3 col-sm-2 col-sm-offset-4">
+                                            @globalInfoItemName
+                                        </div>
+                                        <div class="col-xs-1 col-sm-1">
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                                <button type="button" class="btn btn-info glyphicon glyphicon-plus" id="add-missing-tray" aria-label="add"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" id="missing-tray-0" data-global-info-item-index="@(globalInfoItemId)">
+                                    </div><!-- /.row -->
+                                }
+                                else if (globalInfoItemType == "long text" && globalInfoItemName == "Notes")
+                                {
+                                    <input type="hidden" name="model.WeighingMeasurementGlobalInfoItems.Index" value="@($"{globalInfoItemId}")">
+                                    <input type="hidden" name="@($"model.WeighingMeasurementGlobalInfoItems[{globalInfoItemId}].RandomizedStudentId")" value="@(ViewBag.FirstAvailableRandomizedStudentRowId)">
+                                    <input type="hidden" name="@($"model.WeighingMeasurementGlobalInfoItems[{globalInfoItemId}].CreatedBy")" value="@(ViewBag.UserName)">
+                                    <input type="hidden" name="@($"model.WeighingMeasurementGlobalInfoItems[{globalInfoItemId}].GlobalInfoItemId")" value="@(globalInfoItemId)">
+
+                                    <div class="row">
+                                        <div class="col-xs-6 col-xs-offset-3 col-sm-6 col-sm-offset-3 col-md-5 col-md-offset-3">
+                                            <label class="notes">@globalInfoItemName<textarea class="form-control notes" name="@($"model.WeighingMeasurementGlobalInfoItems[{globalInfoItemId}].Value")"></textarea></label>
+                                        </div>
+                                    </div>
+                                }
+
+                            }
+                        </div><!-- /.row/border-jy -->
+                    </div><!-- /.row -->
+                    <!--Time Tracking-->
+                    <div id="time-tracking">
+                    </div>
+                </div><!-- /.container -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default" id="data-entry-submit">Submit</button>
+                </div>
+            </form><!-- /.imageEditor -->
+        </div><!-- /.studentInfo -->
+    }
+</div><!-- /.main-container -->

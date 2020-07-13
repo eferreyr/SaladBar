@@ -1,0 +1,23 @@
+﻿@model IEnumerable<SaladBarWeb.Models.TestViewModel>
+@{
+    ViewData["Title"] = "Practice1";
+}
+
+<h2>Intervention Days and Locations</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>School Name</th>
+        <th>School Type</th>
+        <th>Intervention Date</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.SchoolName</td>
+            <td>@item.SchoolType</td>
+            <td>@item.DataColletionDate</td>
+        </tr>
+    }
+</table>

@@ -1,0 +1,154 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuItemViewModel>
+
+@{
+    ViewData["Title"] = "AddMenuItems";
+    var menuItemTypesSelectList = ((IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuItemTypeViewModel>)ViewBag.MenuItemTypes)
+                        .Select(x => new SelectListItem { Text = $"{x.Type}", Value = x.Id.ToString() });
+}
+
+@section Scripts {
+<script>
+        var menuItemCount = 1;
+
+        function addMenuItem() {
+            var newMenuItemStr = `<div class="well" id="menu-item-${menuItemCount}">
+                        @Html.Hidden("model.Index", "${menuItemCount}", new { Id = "model.Index" })
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.FirstOrDefault().MenuItemTypeId)
+                            @Html.DropDownList("model[${menuItemCount}].MenuItemTypeId", menuItemTypesSelectList, "-- Item Type --", new { @class = "form-control", Id = "model[${menuItemCount}].MenuItemTypeId" })
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(x => x.FirstOrDefault().Name)
+                            @Html.TextBox("model[${menuItemCount}].Name", "", new { @class = "form-control", Id = "model[${menuItemCount}].Name" })
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                @Html.CheckBox("model[${menuItemCount}].Quantifiable", false, new { Id = "model[${menuItemCount}].Quantifiable" }) @Html.DisplayNameFor(x => x.FirstOrDefault().Quantifiable)
+                            </label>
+                        </div>
+                        @Html.Hidden("model[${menuItemCount}].MenuId", ViewBag.MenuId, new { Id = "model[${menuItemCount}].MenuId" })
+                        @Html.Hidden("model[${menuItemCount}].Active", true, new { Id = "model[${menuItemCount}].Active" })
+                        @Html.Hidden("model[${menuItemCount}].CreatedBy", User.Identity.Name, new { Id = "model[${menuItemCount}].CreatedBy" })
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                                    <button type="button" class="btn btn-danger glyphicon glyphicon-minus" id="remove-menu-item-${menuItemCount}" aria-label="remove"></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            `;
+            var newMenuItem = $($.parseHTML(newMenuItemStr));
+            $(`#menu-item-${menuItemCount - 1}`).after(newMenuItem);
+            $(`#remove-menu-item-${menuItemCount}`).on("click", removeMenuItem);
+            menuItemCount++;
+        }
+
+        function removeMenuItem() {
+            var menuItemId = this.id.replace("remove-menu-item-", "");
+            $(`#menu-item-${menuItemId}`).remove();
+            menuItemCount--;
+            // Re-number menu item info
+            $("[id^='menu-item-']").each(function (index, element) {
+                $(element).prop("id", `menu-item-${index}`);
+            });
+
+            $("[id^='menu-item-']").each(function (index) {
+                $(this).find("[name='model.Index']").val(index)
+                $(this).prop("id", `menu-item-${index}`);
+                $(this).find("[id^='remove-menu-item-']").each(function (idx) {
+                    var id = $(this)[0].id;
+                    id = id.replace(/\d+/, `${index}`);
+                    $(this).prop("id", id);
+                });
+                $(this).find("[name^='model[']").each(function (idx) {
+                    var name = $(this)[0].name;
+                    name = name.replace(/model\[\d+\]/, `model[${index}]`);
+                    $(this).prop("name", name);
+                });
+                $(this).find("[data-valmsg-for^='[']").each(function (idx) {
+                    var name = $(this).attr("data-valmsg-for");
+                    name = name.replace(/\[\d+\]\./, `[${index}].`);
+                    $(this).attr("data-valmsg-for", name);
+                });
+                $(this).find("[for^='z']").each(function (idx) {
+                    var name = $(this).attr("for");
+                    name = name.replace(/z\d+__/, `z${index}__`);
+                    $(this).attr("for", name);
+                });
+                $(this).find("[id^='z']").each(function (idx) {
+                    var id = $(this)[0].id;
+                    id = id.replace(/z\d+__/, `z${index}__`);
+                    $(this).prop("id", id);
+                });
+            });
+        }
+
+        $(document).ready(function () {
+            $("#add-menu-item").on("click", addMenuItem);
+        });
+</script>
+
+}
+
+<h2>AddMenuItems</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form id="add-menu" asp-controller="DataEntry" asp-action="AddMenuItems" asp-route-menuId="@ViewBag.MenuId" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="well" id="menu-item-0">
+                    @Html.Hidden("model.Index", 0, new { Id = $"model.Index" })
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.FirstOrDefault().MenuItemTypeId)
+                        @Html.DropDownList($"model[0].MenuItemTypeId", menuItemTypesSelectList, "-- Item Type --", new { @class = "form-control", Id = $"model[0].MenuItemTypeId" })
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(x => x.FirstOrDefault().Name)
+                        @Html.TextBox($"model[0].Name", "", new { @class = "form-control", Id = $"model[0].Name" })
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            @Html.CheckBox($"model[0].Quantifiable", false, new { Id = $"model[0].Quantifiable" }) @Html.DisplayNameFor(x => x.FirstOrDefault().Quantifiable)
+                        </label>
+                    </div>
+                    @Html.Hidden($"model[0].MenuId", ViewBag.MenuId, new { Id = $"model[0].MenuId" })
+                    @Html.Hidden("model[0].Active", true, new { Id = "model[0].Active" })
+                    @Html.Hidden("model[0].CreatedBy", User.Identity.Name, new { Id = "model[0].CreatedBy" })
+
+                    @*<input type="hidden" id="z0__Index" name="model.Index" value="0" />
+                    <div class="form-group">
+                        <label for="z0__MenuItemTypeId">Item Type</label>
+                        <select class="form-control" data-val="true" data-val-required="The Item Type field is required." id="z0__MenuItemTypeId" name="model[0].MenuItemTypeId">
+                            <option value="">-- Item Type --</option>
+                            <option value="1">Entrees</option>
+                            <option value="2">Sides</option>
+                            <option value="3">Fruits and Vegetables</option>
+                            <option value="4">Beverages</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="z0__Name">Item Name</label>
+                        <input class="form-control" data-val="true" data-val-required="The Item Name field is required." id="z0__Name" name="model[0].Name" type="text" value="" />
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                            <input data-val="true" data-val-required="The Quantifiable? field is required." id="z0__Quantifiable" name="model[0].Quantifiable" type="checkbox" value="true" /> Quantifiable?
+                        </label>
+                    </div>*@
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="btn-group btn-group-sm" role="group" aria-label="...">
+                            <button type="button" class="btn btn-info glyphicon glyphicon-plus" id="add-menu-item" aria-label="add"></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Salad Bar</string>
+    <string name="school_name_default">Select a school, date, and researcher</string>
+    <string name="app_version_info_prefix">Salad Bar\u0020</string>
+</resources>

@@ -1,0 +1,16 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuViewModel>
+
+@{
+    ViewData["Title"] = "Menu";
+}
+
+<h2>Menu</h2>
+
+@Html.ActionLink("Show All", "Menu", "DataEntry") 
+| @Html.ActionLink("Show Active Only", "Menu", "DataEntry", new { activeOnly = true }) 
+| @Html.ActionLink("List by School", "MenuSchoolList", "DataEntry")
+<br />
+<br />
+@Html.ActionLink("Add a new Menu", "AddMenu", "DataEntry")
+
+<partial name="_Menu" model="Model" />

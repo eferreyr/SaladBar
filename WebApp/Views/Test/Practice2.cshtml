@@ -1,0 +1,93 @@
+﻿@model IEnumerable<SaladBarWeb.Models.TestViewModel2>
+@{
+    ViewData["Title"] = "Practice2";
+}
+
+
+
+<h2>Intervention Days and Locations</h2>
+
+<canvas id="myChart" width="400" height="400"></canvas>
+
+<table class="table table-bordered">
+    <tr>
+        <th>School Name</th>
+        <th>Student Grade</th>
+        <th>Student ID</th>
+        <th>Student Gender</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.SchoolName</td>
+            <td>@item.StudentGrade</td>
+            <td>@item.StudentID</td>
+            <td>@item.StudentGender</td>
+        </tr>
+    }
+</table>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<script>
+    let model = @Html.Raw(Json.Serialize(Model));
+    //initialize variables coronado and franklin to zero to count respective schools' populations later
+    let coronado = 0;
+    let franklin = 0;
+
+    //count the student population at each school
+    model.forEach(countStuPop);
+
+    function countStuPop(item) {
+        //increment coronado if a student's school's name matches "Coronado High School"
+        if (item.schoolName == "Coronado High School")
+        {
+            coronado++;
+        }
+        //otherwise, increment franklin
+        else
+        {
+            franklin++;
+        }
+    }
+
+    //create a bar graph that represents the student populations of Coronado and Franklin
+    //the two bars (the x axis) represent Coronado and Franklin respectively
+    //their lengths (the y axis) represent the student population at each school
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'bar', //this chart will be a bar graph
+        data: {
+            //the bars will be called "Coronado High School" and "Franklin Phonetic School"
+            labels: ["Coronado High School","Franklin Phonetic School"],
+            datasets: [{
+                //the y-axis is labeled "Student Population"
+                label: 'Student Population',
+                //the student populations that were counted in countStuPop() function
+                //and saved to the variables coronado and franklin 
+                data: [coronado,franklin],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+
+</script>

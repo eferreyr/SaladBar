@@ -1,0 +1,425 @@
+﻿@model IEnumerable<SaladBarWeb.Models.TestViewModel3>
+@{
+    ViewData["Title"] = "Practice3";
+}
+
+
+
+<h2>Fake Data Graphs</h2>
+
+<div id='DailyDataEntry' width="400" height="400"></div>
+<div id='DailyPerPerson' width="400" height="400"></div>
+<div id='DailyPerPersonFunction' width="400" height="400"></div>
+<div id='SchoolType' width="400" height="400"></div>
+<div id='PerSchool' width="400" height="400"></div>
+<div id='PerSchoolFunction' width="400" height="400"></div>
+<div id='PerElementarySchoolFunction' width="400" height="400"></div>
+<div id='PerMiddleSchoolFunction' width="400" height="400"></div>
+<div id='PerHighSchoolFunction' width="400" height="400"></div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    let model = @Html.Raw(Json.Serialize(Model));
+
+    //THIS PAGE INCLUDES
+    //two line graphs: one shows the amount of total amount of data entries completed per day and cumulatively
+    // the other shows the amount of data entries completed per day per person
+    //4 pie charts: one shows the amount of data entries completed per level of schooling (elementary, middle and high)
+    // another shows the amount of data entries completed per Elementary School
+    // the next two show the same this as before but for middle and high schools
+    //Then two functions are created:
+    // one is for creating line charts like the ones described above
+    // the other is for creating pie charts like the ones described above
+
+    //RELEVANT CATEGORIES OF DATA
+    //email, date, school, type of school, number of each school/type of school (calculate)
+
+    //ARTIFICIAL DATA
+    //date data entry was completed
+    let dataDates = [2.10, 2.10, 2.10, 2.10, 2.10, 2.10, 2.10, 2.10, 2.10,
+        2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11, 2.11,
+        2.12, 2.12, 2.12, 2.12, 2.12, 2.12,
+        2.13, 2.13, 2.13, 2.13, 2.13, 2.13, 2.13, 2.13, 2.13, 2.13];
+
+    //school where data was collected
+    let dataSchools = ["McAuliffe", "Heritage", "Heritage", "Duram", "McAuliffe",
+        "Lewisville", "Heritage", "Lewisville", "Heritage", "Lamar", "Lamar",
+        "Briarhill", "McAuliffe", "McAuliffe", "Plano East", "Lewisville", "Lewisville",
+        "Lamar", "Duram", "Plano West", "Lamar", "McAuliffe", "Briarhill", "Flower Mound",
+        "Flower Mound", "Flower Mound", "Flower Mound", "Flower Mound", "Flower Mound",
+        "Highland Village", "Highland Village", "Lamar", "Plano East", "Highland Village",
+        "Highland Village", "Highland Village", "Marcus", "Marcus", "Marcus"];
+
+    //Whether school is elementary (1), middle (2), or high (3)
+    let dataSchoolType = [1, 1, 1, 2, 1, 3, 1, 3, 1, 2, 2, 2, 1, 1, 3, 3, 3, 2, 2, 3,
+        2, 1, 2, 3, 3, 3, 3, 3, 3, 1, 1, 2, 3, 1, 1, 1, 3, 3, 3];
+
+    //email of person who completed the data entry
+    let dataEmail = ["abcd1234@yahoo.org", "johndoe@asu.edu", "johndoe@asu.edu",
+        "drnobody@asu.edu", "abcd1234@yahoo.org", "drnobody@asu.edu", "johndoe@asu.edu",
+        "drnobody@asu.edu", "johndoe@asu.edu", "janedoe23@gmail.com", "janedoe23@gmail.com",
+        "johndoe@asu.edu", "drnobody@asu.edu", "drnobody@asu.edu", "drnobody@asu.edu",
+        "drnobody@asu.edu", "drnobody@asu.edu", "janedoe23@gmail.com",
+        "janedoe23@gmail.com", "drnobody@asu.edu", "janedoe23@gmail.com",
+        "drnobody@asu.edu", "johndoe@asu.edu", "fakeperson@gmail.com",
+        "fakeperson@gmail.com", "fakeperson@gmail.com", "fakeperson@gmail.com",
+        "fakeperson@gmail.com", "fakeperson@gmail.com", "abcd1234@yahoo.org",
+        "abcd1234@yahoo.org", "johndoe@asu.edu", "drnobody@asu.edu", "abcd1234@yahoo.org",
+        "abcd1234@yahoo.org", "abcd1234@yahoo.org", "janedoe23@gmail.com",
+        "janedoe23@gmail.com", "janedoe23@gmail.com"];
+
+    //counts number of data collections done each day
+    let feb10 = countData(dataDates, 0, dataDates.length-1, 2.10);
+    let feb11 = countData(dataDates, 0, dataDates.length-1, 2.11);
+    let feb12 = countData(dataDates, 0, dataDates.length-1, 2.12);
+    let feb13 = countData(dataDates, 0, dataDates.length - 1, 2.13);
+
+    //takes in a data set (array), a start index, an end index, and the value you are searching for.
+    //returns number of instances of given key in given data set within given start and end indeces.
+    function countData(data, start, end, key) {
+        let count = 0;
+        for (i = start; i <= end; i++)
+        {
+            if (data[i] == key)
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    //CREATE A LINE GRAPH WITH THE TOTAL DATA ENTRIES DONE BY EVERYONE PER DAY AND CUMULATIVELY
+    //displays amt of data entries completed each day
+    let line1 = {
+        //x-axis displays the day of the month of Feb
+        x: [10, 11, 12, 13],
+        //y-axis displays amount of data entries completed that day
+        y: [feb10, feb11, feb12, feb13],
+        mode: 'lines',// plain line connecting data points
+        name: "Daily Total", //name of line on legend
+        line: {
+            color: 'rgb(55, 128, 191)',
+            width: 3
+        }
+    };
+
+    
+    //displays amt of data entries completed over time
+    let line2 = {
+        //x-axis displays the day of the month of Feb
+        x: [10, 11, 12, 13],
+        //y-axis displays data entries completed cumulatively over time
+        //by adding the current day's amount of completed data entries to the running total
+        y: [feb10, feb10+feb11, feb10+feb11+feb12, feb10+feb11+feb12+feb13],
+        mode: 'lines', //plain line connecting data points
+        name: "Cumulative Total", //name of line on legend
+        line: {
+            color: 'rgb(128, 0, 128)',
+            width: 3
+        }
+    };
+
+    //create a data set containing both the perDay (line1) and cumulative (line2) lines
+    var data1 = [line1, line2];
+
+    //create the line graph
+    var layout1 = {
+        title: 'Daily Data Entry Completion', //title of graph
+        xaxis: {
+            title: 'Date (Feb 2020)', //x-axis label
+            showgrid: false,
+            zeroline: false
+        },
+        yaxis: {
+            title: '# of Completed Data Entries', //y-axis label
+            showline: false
+        }
+    };
+
+    //plot line graph
+    Plotly.newPlot('DailyDataEntry', data1, layout1);
+
+    //CREATE A LINE GRAPH DISPLAYING THE DAILY AMOUNT OF DATA ENTRIES COMPLETED PER PERSON
+    //counts number of data collections done each day by "johndoe@asu.edu"
+    let johnDfeb10 = countData(dataEmail, 0, feb10-1, "johndoe@asu.edu");
+    let johnDfeb11 = countData(dataEmail, feb10, feb11-1, "johndoe@asu.edu");
+    let johnDfeb12 = countData(dataEmail, feb11, feb12-1, "johndoe@asu.edu");
+    let johnDfeb13 = countData(dataEmail, feb12, feb13 - 1, "johndoe@asu.edu");
+
+    //displays amt of data entries completed each day by "johndoe@asu.edu"
+    let lineJohnD = {
+        x: [10, 11, 12, 13],
+        y: [johnDfeb10, johnDfeb11, johnDfeb12, johnDfeb13],
+        mode: 'lines',
+        name: "johndoe@asu.edu",
+        line: {
+            color: 'rgb(55, 128, 191)',
+            width: 3
+        }
+    };
+
+    //counts number of data collections done each day by "janedoe23@gmail.com"
+    let janeDfeb10 = countData(dataEmail, 0, feb10-1, "janedoe23@gmail.com");
+    let janeDfeb11 = countData(dataEmail, feb10, feb11-1, "janedoe23@gmail.com");
+    let janeDfeb12 = countData(dataEmail, feb11, feb12-1, "janedoe23@gmail.com");
+    let janeDfeb13 = countData(dataEmail, feb12, feb13 - 1, "janedoe23@gmail.com");
+
+    //displays amt of data entries completed each day by "janedoe23@gmail.com"
+    let lineJaneD = {
+        x: [10, 11, 12, 13],
+        y: [janeDfeb10, janeDfeb11, janeDfeb12, janeDfeb13],
+        mode: 'lines',
+        name: "janedoe23@gmail.com",
+        line: {
+            color: 'rgb(164, 194, 244)',
+            width: 3
+        }
+    };
+
+    //counts number of data collections done each day by "fakeperson@gmail.com"
+    let fakePfeb10 = countData(dataEmail, 0, feb10-1, "fakeperson@gmail.com");
+    let fakePfeb11 = countData(dataEmail, feb10, feb11-1, "fakeperson@gmail.com");
+    let fakePfeb12 = countData(dataEmail, feb11, feb12-1, "fakeperson@gmail.com");
+    let fakePfeb13 = countData(dataEmail, feb12, feb13 - 1, "fakeperson@gmail.com");
+
+    //displays amt of data entries completed each day by "fakeperson@gmail.com"
+    let lineFakeP = {
+        x: [10, 11, 12, 13],
+        y: [fakePfeb10, fakePfeb11, fakePfeb12, fakePfeb13],
+        mode: 'lines',
+        name: "fakeperson@gmail.com",
+        line: {
+            color: 'rgb(255, 217, 102)',
+            width: 3
+        }
+    };
+
+//counts number of data collections done each day by "drnobody@asu.edu"
+    let drNobFeb10 = countData(dataEmail, 0, feb10-1, "drnobody@asu.edu");
+    let drNobFeb11 = countData(dataEmail, feb10, feb11-1, "drnobody@asu.edu");
+    let drNobFeb12 = countData(dataEmail, feb11, feb12-1, "drnobody@asu.edu");
+    let drNobFeb13 = countData(dataEmail, feb12, feb13 - 1, "drnobody@asu.edu");
+
+    //displays amt of data entries completed each day by "drnobody@asu.edu"
+    let lineDrNob = {
+        x: [10, 11, 12, 13],
+        y: [drNobFeb10, drNobFeb11, drNobFeb12, drNobFeb13],
+        mode: 'lines',
+        name: "drnobody@asu.edu",
+        line: {
+            color: 'rgb(234,153,153)',
+            width: 3
+        }
+    };
+
+//counts number of data collections done each day by "abcd1234@yahoo.org"
+    let abcdFeb10 = countData(dataEmail, 0, feb10-1, "abcd1234@yahoo.org");
+    let abcdFeb11 = countData(dataEmail, feb10, feb11-1, "abcd1234@yahoo.org");
+    let abcdFeb12 = countData(dataEmail, feb11, feb12-1, "abcd1234@yahoo.org");
+    let abcdFeb13 = countData(dataEmail, feb12, feb13 - 1, "abcd1234@yahoo.org");
+
+    //displays amt of data entries completed each day by "abcd1234@yahoo.org"
+    let lineAbcd = {
+        x: [10, 11, 12, 13],
+        y: [abcdFeb10, abcdFeb11, abcdFeb12, abcdFeb13],
+        mode: 'lines',
+        name: "abcd1234@yahoo.org",
+        line: {
+            color: 'rgb(142, 124, 195)',
+            width: 3
+        }
+    };
+
+    var data2 = [lineJohnD, lineJaneD, lineFakeP, lineDrNob, lineAbcd];
+
+    var layout2 = {
+        title: 'Daily Total Data Entries Per Person', //title of graph
+        xaxis: {
+            title: 'Date (Feb 2020)',
+            zeroline: false
+        },
+        yaxis: {
+            title: '# of Completed Data Entries'
+        }
+    };
+
+    Plotly.newPlot('DailyPerPerson', data2, layout2);
+
+    //CREATE A PIE CHART DISPLAYING THE AMOUNT OF DATA ENTRIES COMPLETED
+    //FOR EACH LEVEL OF SCHOOLING (ELEMENTARY, MIDDLE, AND HIGH)
+    //counts number of data collections done at each type of school
+    let elementary = countData(dataSchoolType, 0, dataSchoolType.length-1, 1);
+    let middle = countData(dataSchoolType, 0, dataSchoolType.length-1, 2);
+    let high = countData(dataSchoolType, 0, dataSchoolType.length - 1, 3);
+
+    let data3 = [{
+        values: [elementary, middle, high],
+        labels: ['Elementary School', 'Middle School', 'High School'],
+        type: 'pie'
+    }];
+
+    let layout3 = {
+        title: 'Data Collection Distribution Among Different School Types'
+    }
+
+    Plotly.newPlot('SchoolType', data3, layout3);
+
+    //CREATE A GRID OF 3 PIE CHARTS, EACH DISPLAYING THE AMOUNT OF DATA ENTRIES
+    //COMPLETED AT EACH SCHOOL AT THAT LEVEL OF SCHOOLING (ELEMENTARY, MIDDLE, AND HIGH)
+    //counts number of data collections done at each elementary school
+    let mca = countData(dataSchools, 0, dataSchools.length-1, 'McAuliffe');
+    let her = countData(dataSchools, 0, dataSchools.length-1, 'Heritage');
+    let hil = countData(dataSchools, 0, dataSchools.length - 1, 'Highland Village');
+
+    //counts number of data collections done at each middle school
+    let bri = countData(dataSchools, 0, dataSchools.length-1, 'Briarhill');
+    let lam = countData(dataSchools, 0, dataSchools.length-1, 'Lamar');
+    let dur = countData(dataSchools, 0, dataSchools.length - 1, 'Duram');
+
+    //counts number of data collections done at each high school
+    let mar = countData(dataSchools, 0, dataSchools.length-1, 'Marcus');
+    let lew = countData(dataSchools, 0, dataSchools.length-1, 'Lewisville');
+    let flo = countData(dataSchools, 0, dataSchools.length-1, 'Flower Mound');
+    let plW = countData(dataSchools, 0, dataSchools.length-1, 'Plano West');
+    let plE = countData(dataSchools, 0, dataSchools.length-1, 'Plano East');
+    let kil = countData(dataSchools, 0, dataSchools.length - 1, 'Killian');
+
+    let data4 = [{
+        values: [mca, her, hil],
+        labels: ["McAuliffe", "Heritage", "Highland Village"],
+        type: 'pie',
+        name: 'Data Collections Per Elementary School',
+        marker: {
+            colors: ['rgb(56,75,126)', 'rgb(177,127,38)', 'rgb(33,75,99)']
+        },
+        domain: {
+            row: 0,
+            column: 0
+        },
+        hoverinfo: 'label+percent+name'
+    },
+
+    {
+        values: [bri, lam, dur],
+        labels: ["Briarhill", "Lamar", "Duram"],
+        type: 'pie',
+        name: 'Data Collection Per Middle School',
+        marker: {
+            colors: ['rgb(18,36,37)', 'rgb(205,152,36)', 'rgb(79,129,102)']
+        },
+        domain: {
+            row: 0,
+            column: 1
+        },
+        hoverinfo: 'label+percent+name'
+    },
+
+    {
+        values: [mar, lew, flo, plW, plE, kil],
+        labels: ['Marcus', 'Lewisville', 'Flower Mound', 'Plano West', 'Plano East', 'Killian'],
+        type: 'pie',
+        name: "Data Collections Per High School",
+        marker: {
+            colors: ['rgb(34,53,101)', 'rgb(99,79,37)', 'rgb(151,179,100)',
+                    'rgb(146,123,21)', 'rgb(36,55,57)', 'rgb(129,180,179)']
+        },
+        domain: {
+            row: 1,
+            column: 0
+        },
+        hoverinfor: 'label+percent+name'
+    }];
+
+    let layout4 = {
+        title: 'Data Collections Per School',
+        grid: { rows: 2, columns: 2 }
+    };
+
+    Plotly.newPlot('PerSchool', data4, layout4);
+
+    //CREATING THE PIE CHARTS WAS VERY REDUNDANT SO WE CREATED A FUNCTION TO SIMPLIFY THE PROCESS
+    //pie chart function
+    function pieChart(title, names, data) {
+        //initialize an array of pie chart values that will be in the chart
+        let pieVal = new Array(names.length);
+
+        //cycle through array of names to find pie values
+        for (let i = 0; i < names.length; i++)
+        {
+            //counts number of data collections done each day by name[i]
+            pieVal[i] = countData(data, 0, data.length - 1, names[i]);
+        }
+
+        let pieData = [{
+            values: pieVal,
+            labels: names,
+            type: 'pie',
+            name: title
+        }];
+
+        let pieLayout = {
+            height: 400,
+            width: 500
+        };
+
+        Plotly.newPlot(title, pieData, pieLayout);
+    }
+
+    pieChart("PerSchoolFunction", [1, 2, 3], dataSchoolType);
+    pieChart("PerElementarySchoolFunction", ["McAuliffe", "Heritage", "Highland Village"], dataSchools);
+    pieChart("PerMiddleSchoolFunction", ["Briarhill", "Lamar", "Duram"], dataSchools);
+    pieChart("PerHighSchoolFunction", ['Marcus', 'Lewisville', 'Flower Mound', 'Plano West', 'Plano East', 'Killian'], dataSchools);
+
+    //CREATING ALL THE LINES FOR THE LINE GRAPH COULD GET PRETTY REDUNDANT
+    //SO HERE IS A FUNCTION THAT WILL TAKE IN A LIST OF NAMES AND THEN CREATE THE GRAPH
+    //creates graph of Daily Totals of Data Entries completed
+    //takes in names to calculate data for
+    function createDailyDataGraph(names) {
+        //initialize an array of lines that will be in the graph
+        let lines = new Array(names.length);
+
+        //cycle through array of names to find y values and create line for that name
+        for (let i = 0; i < names.length; i++)
+        {
+            //counts number of data collections done each day by name[i]
+            let userfeb10 = countData(dataEmail, 0, feb10 - 1, names[i]);
+            let userfeb11 = countData(dataEmail, feb10, feb11-1, names[i]);
+            let userfeb12 = countData(dataEmail, feb11, feb12-1, names[i]);
+            let userfeb13 = countData(dataEmail, feb12, feb13 - 1, names[i]);
+
+            //create line using recently found variables as y values
+            lines[i] = {
+                x: [10, 11, 12, 13],
+                y: [userfeb10, userfeb11, userfeb12, userfeb13],
+                mode: 'lines',
+                name: names[i],
+                line: {
+                    //generate a random color
+                    color: 'rgb(Math.round(Math.random()*255),Math.round(Math.random()*255),Math.round(Math.random()*255),',
+                    width: 3
+                }
+            }
+
+        }
+
+
+        //create layout for graph
+        var layout = {
+            title: 'Daily Total Data Entries Per Person', //title of graph
+            xaxis: {
+                title: 'Date (Feb 2020)',
+                zeroline: false
+            },
+            yaxis: {
+                title: '# of Completed Data Entries'
+            }
+        };
+
+        Plotly.newPlot('DailyPerPersonFunction', lines, layout);
+    }
+
+
+    //call createDailyDataGraph function
+    createDailyDataGraph(["johndoe@asu.edu","janedoe23@gmail.com","fakeperson@gmail.com","drnobody@asu.edu","abcd1234@yahoo.org"]);
+
+</script>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="snhp.asu.edu.saladbar.Activities.AssentActivity" >
+
+    <LinearLayout
+        android:id="@+id/scrolling_content_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="5dp">
+
+        <TextView
+            android:id="@+id/schoolNameTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="School Name"
+            android:textAlignment="center"
+            android:gravity="center_vertical"
+            android:textSize="55dp"
+            android:padding="5dp"
+            android:layout_marginBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/schoolChantTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="School Chant"
+            android:textAlignment="center"
+            android:gravity="center_vertical"
+            android:padding="5dp"
+            android:textSize="40dp" />
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="2dp">
+
+            <TextView
+                android:id="@+id/assentCountTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="100 Assented"
+                android:textAlignment="center"
+                android:gravity="center_vertical"
+                android:textSize="20dp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="40dp" />
+
+            <TextView
+                android:id="@+id/currentStudentIdTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:text="Student ID: 1202548887"
+                android:textAlignment="center"
+                android:gravity="center_vertical"
+                android:textSize="20dp"
+                android:layout_marginEnd="40dp"
+                android:layout_alignParentEnd="true"  />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="2dp">
+
+            <EditText
+                android:id="@+id/idEditText"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:ems="13"
+                android:inputType="number"
+                android:hint="Enter Student ID"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_marginStart="20dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true" >
+                <requestFocus />
+            </EditText>
+
+            <Button
+                android:id="@+id/searchButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Check Qualification"
+                android:paddingLeft="10dp"
+                android:layout_marginEnd="45dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/spanishButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:text="Spanish"
+        android:visibility="gone"/>
+    
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="460dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp" >
+
+        <TextView
+            android:id="@+id/infoTextView"
+            android:textSize="35dp"
+            android:gravity="center_vertical"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:padding="5dp" />
+
+    </ScrollView>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/refuseButton"
+            android:layout_width="174dp"
+            android:layout_height="48dp"
+            android:text="Refuse"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="20dp" />
+
+        <Button
+            android:id="@+id/assentButton"
+            android:layout_width="174dp"
+            android:layout_height="48dp"
+            android:text="Assent"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp" />
+
+    </RelativeLayout>
+</LinearLayout>

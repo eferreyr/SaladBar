@@ -1,0 +1,13 @@
+﻿@model IEnumerable<SaladBarWeb.Models.AllDataCollectionViewModel>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h2>All Data Collection Date</h2>
+
+
+@foreach (var item in Model)
+{
+    <ul>School Name: @item.SchoolName  Date: @item.DataColletionDate</ul>
+}

@@ -1,0 +1,34 @@
+﻿@model SaladBarWeb.Models.DataEntryViewModels.MenuViewModel
+@{
+    ViewData["Title"] = "AddMenu";
+    var measurementDaysSelectList = ((List<SaladBarWeb.Models.InterventionDayViewModel>)ViewBag.MeasurementDays)
+                        .Select(x => new SelectListItem { Text = $"{x.School.Name} - {x.DtIntervention.ToString("yyyy-MM-dd")}", Value = x.Id.ToString() });
+}
+
+<h2>AddMenu</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-controller="DataEntry" asp-action="AddMenu" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Name)
+                    @Html.TextBoxFor(x => x.Name, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(x => x.Name, "", new { @class = "text-danger" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.InterventionDayId)
+                    @Html.DropDownListFor(x => x.InterventionDayId, measurementDaysSelectList, "-- Measurement Date --", new { @class = "form-control" })
+                    @Html.ValidationMessageFor(x => x.InterventionDayId, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.Hidden("Active", true, new { Id = "Active" })
+                @Html.Hidden("CreatedBy", User.Identity.Name, new { Id = "CreatedBy" })
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

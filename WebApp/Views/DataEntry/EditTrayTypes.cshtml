@@ -1,0 +1,42 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.TrayTypeViewModel>
+
+@{
+    ViewData["Title"] = "Edit Tray Types";
+}
+
+@section Scripts {
+    <script></script>
+}
+
+<h2>Edit Tray Types</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-controller="DataEntry" asp-action="EditTrayTypes" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                @foreach (var item in Model)
+                {
+                    @Html.Hidden("model.Index", item.Id, new { Id = $"model.Index.{item.Id}" })
+                    <div class="well">
+                        <div class="form-group">
+                            @Html.LabelFor(x => item.Type)
+                            @Html.TextBox($"model[{item.Id}].Type", item.Type, new { @class = "form-control", Id = $"model[{item.Id}].Type" })
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                @Html.CheckBox($"model[{item.Id}].Active", item.Active, new { Id = $"model[{item.Id}].Active" }) @Html.DisplayNameFor(x => item.Active)
+                            </label>
+                        </div>
+                        @Html.Hidden($"model[{item.Id}].Id", item.Id, new { Id = $"model[{item.Id}].Id" })
+                        @Html.Hidden($"model[{item.Id}].DtCreated", item.DtCreated, new { Id = $"model[{item.Id}].DtCreated" })
+                        @Html.Hidden($"model[{item.Id}].CreatedBy", item.CreatedBy, new { Id = $"model[{item.Id}].CreatedBy" })
+                    </div>
+                }
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default">Save</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

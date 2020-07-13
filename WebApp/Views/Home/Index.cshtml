@@ -1,0 +1,46 @@
+﻿@using SaladBarWeb.Services;
+@{
+    ViewData["Title"] = "Home";
+}
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+    <div class="container">
+        @if (!User.Identity.IsAuthenticated)
+        {
+            <h1>Welcome!</h1>
+            <p>Log in to start data entry. Don't have an account? Contact Gina or John to create an account.</p>
+            <p><a asp-area="" asp-controller="Account" asp-action="Login" role="button" class="btn btn-primary btn-lg">Log in &raquo;</a></p>
+        }
+        else
+        {
+            var raName = new Helper().GetUserFirstName(User.Identity.Name);
+            <h1>Welcome @raName!</h1>
+        }
+
+    </div>
+</div>
+
+<div class="container">
+    <!-- Example row of columns -->
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Google Drive</h2>
+            <p>Link to our Google Drive</p>
+            <p><a class="btn btn-default" href="https://drive.google.com/drive/folders/0AOrOsGjrNOIaUk9PVA" target="_blank" role="button">Google Drive Folder &raquo;</a></p>
+        </div>
+        <div class="col-md-6">
+            <h2>Asana</h2>
+            <p>Link to our Asana</p>
+            <p><a class="btn btn-default" href="https://app.asana.com/0/home/358247520705171" target="_blank" role="button">Asana &raquo;</a></p>
+        </div>
+    </div>
+</div> <!-- /container -->
+
+@if (User.Identity.IsAuthenticated)
+{
+    <hr />
+    <div class="container">
+        <partial name="~/Views/DataEntry/Leaderboard.cshtml" model="Model" />
+    </div> <!-- /container -->
+}

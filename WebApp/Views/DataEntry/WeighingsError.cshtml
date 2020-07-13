@@ -1,0 +1,30 @@
+﻿@using SaladBarWeb.Models.DataEntryViewModels
+@using SaladBarWeb.DBModels
+
+@model IEnumerable<WeighingMeasurementViewModel>
+
+
+@{
+    ViewData["Title"] = "Weighings";
+    var interventionDayTrayTypesSelectList = ViewBag.InterventionDayTrayTypes != null ?
+        ((List<InterventionDayTrayTypes>)ViewBag.InterventionDayTrayTypes)
+            .Select(x => new SelectListItem { Text = x.TrayType.Type, Value = x.Id.ToString() }) : null;
+    var weighings = (IEnumerable<Weighings>)ViewBag.Weighings;
+}
+
+@section Stylesheets {
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <link href="~/css/starter-template.css" rel="stylesheet">
+}
+
+@section Scripts {
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="~/js/jquery.zoom.min.js"></script>
+}
+
+<h2>Weighing Images</h2>
+
+<div class="main-container">
+    <div class="alert alert-danger" role="alert">@ViewBag.Message</div>
+</div><!-- /.main-container -->

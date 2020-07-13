@@ -1,0 +1,113 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.DataEntryMeasurementDayViewModel>
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    ViewData["Title"] = "Waves";
+
+    var user = await UserManager.GetUserAsync(User);
+    var userId = user?.Id;
+}
+
+@section Stylesheets{
+    <style>
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 2fr 2fr 2fr;
+            /*border-top: 1px solid black;
+            border-right: 1px solid black;*/
+        }
+
+            .grid > span {
+                padding: 8px 4px;
+                /*border-left: 1px solid black;
+                border-bottom: 1px solid black;*/
+            }
+
+        a.disabled {
+            /*color: currentColor;*/
+            cursor: not-allowed;
+            opacity: 0.5;
+            text-decoration: none;
+            pointer-events: none;
+        }
+    </style>
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<ol class="breadcrumb">
+    Navigation:
+    <li>@Html.ActionLink("Schools", "Index", "DataEntry")</li>
+    <li class="active">@ViewBag.SchoolName</li>
+</ol>
+
+<div class="grid">
+    <span>
+        <strong>Wave Date</strong>
+    </span>
+    <span>
+        <strong>First Entry (completed/total)</strong>
+    </span>
+    <span>
+        <strong>Second Entry (completed/total)</strong>
+    </span>
+    <span>
+        <strong>Third Entry (completed/total)</strong>
+    </span>
+    <span>
+        <strong>Lock Status</strong>
+    </span>
+
+    @foreach (var item in Model)
+    {
+        var interventionDay = item.InterventionDay;
+        var dataEntryLock = item.DataEntryLock;
+        var lockedUser = item.LockedUser;
+        var totalWeighings = item.TotalWeighings;
+        var totalCompletedFirstDataEntry = item.TotalCompletedFirstDataEntry;
+        var totalCompletedSecondDataEntry = item.TotalCompletedSecondDataEntry;
+        var totalCompletedThirdDataEntry = item.TotalCompletedThirdDataEntry;
+
+        var isLocked = dataEntryLock != null && dataEntryLock.Locked == "Y";
+        var isLockedByCurrentUser = isLocked && dataEntryLock.AspNetUserId == userId;
+
+        if (!isLocked || isLockedByCurrentUser)
+        {
+            <span>
+                @Html.ActionLink(interventionDay.DtIntervention.ToString("yyyy-MM-dd"), "Weighings", "DataEntry", new { schoolId = interventionDay.SchoolId, interventionDayId = interventionDay.Id })
+            </span>
+        }
+        else
+        {
+            <span>
+                @Html.ActionLink(interventionDay.DtIntervention.ToString("yyyy-MM-dd"), "Weighings", "DataEntry", new { schoolId = interventionDay.SchoolId, interventionDayId = interventionDay.Id }, new { @class = "disabled" })
+            </span>
+           }
+
+        <span>
+            @totalCompletedFirstDataEntry/@totalWeighings
+        </span>
+        <span>
+            @totalCompletedSecondDataEntry/@totalWeighings
+        </span>
+        <span>
+            @totalCompletedThirdDataEntry/@totalWeighings
+        </span>
+        @if (isLocked)
+        {
+            if (isLockedByCurrentUser)
+            {
+                <span>You currently have this locked</span>
+            }
+            else
+            {
+                <span>Locked by @lockedUser.FirstName @lockedUser.LastName[0]. @Html.ActionLink("Click to unlock", "DataEntryLock", "DataEntry")</span>
+            }
+
+        }
+        else
+        {
+            <span></span>
+        }
+    }
+</div>

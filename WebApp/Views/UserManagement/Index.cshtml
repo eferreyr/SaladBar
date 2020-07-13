@@ -1,0 +1,66 @@
+﻿@model SaladBarWeb.Models.UserManagementViewModels.UserManagementIndexViewModel
+@using SaladBarWeb.Models
+
+
+@{
+  ViewData["Title"] = "User Management";
+}
+
+<h2>User Management</h2>
+<div class="top-buffer"></div>
+<div class="panel panel-primary">
+  <div class="panel-heading panel-head">Users</div>
+  <div class="panel-body">
+    <div class="btn-group">
+      <a id="createEditUserModal" data-toggle="modal" asp-action="AddUser" data-target="#modal-action-user" class="btn btn-primary">
+        <i class="glyphicon glyphicon-plus"></i> Add User
+      </a>
+    </div>
+    <div class="top-buffer"></div>
+    <table class="table table-bordered table-striped table-condensed">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Roles</th>
+          <th>Active</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var item in Model.Users)
+        {
+          <tr>
+            <td>@item.FirstName @item.LastName</td>
+            <td>@item.Email</td>
+            <td>@item.Roles</td>
+            @if (@item.Active)
+            {
+              <td><i class="glyphicon glyphicon-check"></i></td>
+            }
+            else
+            {
+              <td><i class="glyphicon glyphicon-unchecked"></i></td>
+            }
+            <td>
+              <a id="editUserModal" data-toggle="modal" asp-action="EditUser" asp-route-email="@item.Email" data-target="#modal-action-user"
+                  class="btn btn-info">
+                <i class="glyphicon glyphicon-pencil"></i> Edit
+              </a>
+              <a id="deleteUserModal" data-toggle="modal" asp-action="DeleteUser" asp-route-email="@item.Email" data-target="#modal-action-user" class="btn btn-danger">
+                <i class="glyphicon glyphicon-trash"></i> Delete
+              </a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@Html.Partial("_Modal", new BootstrapModel { ID = "modal-action-user", AreaLabeledId = "modal-action-user-label", Size = ModalSize.Medium })
+
+@section scripts
+{
+  <script src="~/js/user-index.js" asp-append-version="true"></script>
+}

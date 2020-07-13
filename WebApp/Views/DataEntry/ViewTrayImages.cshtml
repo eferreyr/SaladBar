@@ -1,0 +1,353 @@
+﻿@model SaladBarWeb.Models.DataEntryViewModels.ViewTrayImageViewModel
+
+@{
+    var trayId = Context.Request.Query["trayId"];
+    ViewData["Title"] = $"View Tray Images - {trayId}";
+}
+
+@section Stylesheets {
+    <style>
+        .image-menu-data {
+            text-align: left;
+        }
+
+        .img-fluid {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .imageContainer {
+            margin: 10px;
+        }
+
+        h3 {
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        /* styles unrelated to zoom */
+        * {
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        /* these styles are for the demo, but are not required for the plugin */
+        .zoom {
+            display: inline-block;
+            position: relative;
+        }
+
+        /* magnifying glass icon */
+        .zoom:after {
+            content: '';
+            display: block;
+            width: 33px;
+            height: 33px;
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: url(icon.png);
+        }
+
+        .zoom img {
+            display: block;
+        }
+
+        .zoom img::selection {
+            background-color: transparent;
+        }
+
+        .row label {
+            border: 1px solid #ccc;
+            padding: 5px;
+            margin: 0 0 5px;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/jquery.zoom.min.js"></script>
+    <script src="~/js/jQueryRotate.js"></script>
+
+    <script>
+        $('.imageContainer img').data('rotation', 0);
+
+        // Modified from http://jsfiddle.net/xcnas330/
+        function rotateImage() {
+            var imageId = this.id.replace("_rotate", "");
+            var image = `#${imageId}`;
+            var zoomedImage = $(image).next();
+
+            var ort = $(image).data('rotation');
+            var rt = $(image).data('rotation') + 90;
+            if (rt > 270) {
+                rt = 0;
+            }
+            $(image).data('rotation', rt);
+            if (rt % 180) {
+                var o = '';
+                if (rt == 90) {
+                    var val = ($(image).height() + $(image).width()) / 4;
+                    o = `${val}px ${val}px`;
+                }
+                else {
+                    o = '332px 205px'
+                }
+
+                $(image).removeAttr('class').addClass('r' + rt).rotate({ angle: ort, animateTo: rt, center: o });
+                $(image).css({
+                    'width': '100%',
+                    'max-width': '',
+                    'height': '',
+                    'max-height': 'auto'
+                });
+                $(image).parent().animate({
+                    height: $(image).width()
+                }, 500, null);
+
+                zoomedImage.rotate({ angle: 0, center: ['50%', '50%'] });
+            } else {
+                $(image).removeAttr('class').addClass('r' + rt).rotate({ angle: ort, animateTo: rt, center: ['50%', '50%'] });
+                $(image).css({
+                    'width': '',
+                    'max-width': '100%',
+                    'height': 'auto',
+                    'max-height': ''
+                });
+                $(image).parent().animate({
+                    height: $(image).height()
+                }, 500, null);
+
+                zoomedImage.rotate({ angle: rt, center: ['50%', '50%'] });
+            }
+        }
+
+        $(document).ready(function () {
+            $('.imageContainer img')
+                .parent()
+                .zoom({ on: 'click' });
+
+            $('imageEditor').on('reset', function (e) {
+                setTimeout(function () {
+                    editImage();
+                }, 100);
+            });
+
+            // editing image via css properties
+            function editImage() {
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+
+                var br = $(obj_brightness).val(); // brightness
+                var ct = $(obj_contrast).val(); // contrast
+
+                // Modify current display's brightness/contrast
+                $('.imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                $('.imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                // Modify zoomed photo's brightness/contrast
+                var zoomedImage = $(obj_image).next();
+
+                zoomedImage.css(
+                    'filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+
+                zoomedImage.css(
+                    '-webkit-filter', 'brightness(' + br +
+                    '%) contrast(' + ct +
+                    '%)'
+                );
+            }
+
+            function resetImage() {
+                var default_value = 100;
+
+                var num = this.name.match(/\d+/)[0];
+                var obj_brightness = "#image" + num + "_br";
+                var obj_contrast = "#image" + num + "_ct";
+                var obj_image = "#image" + num;
+                var zoomedImage = $(obj_image).next();
+
+                $(obj_brightness).val(default_value); // brightness
+                $(obj_contrast).val(default_value); // contrast
+
+                // Reset current display's brightness/contrast
+                $('.imageContainer ' + obj_image).css(
+                    'filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                $('.imageContainer ' + obj_image).css(
+                    '-webkit-filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                // Reset zoomed photo's brightness/contrast
+                zoomedImage.css(
+                    'filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                zoomedImage.css(
+                    '-webkit-filter', 'brightness(' + default_value +
+                    '%) contrast(' + default_value +
+                    '%)'
+                );
+
+                var ort = $(obj_image).getRotateAngle()
+                if (ort > 0) {
+                    $(obj_image).removeAttr('class').addClass('r0').rotate({ angle: ort, animateTo: 0, center: ['50%', '50%'] });
+                    $(obj_image).data('rotation', 0);
+
+                    $(obj_image).parent().animate({
+                        height: $(obj_image).height()
+                    }, 500, null);
+
+                    zoomedImage.rotate({ angle: 0, center: ['50%', '50%'] });
+                }
+            }
+
+            // When sliders change image will be updated via editImage() function
+            $("input[type=range]").change(editImage).mousemove(editImage);
+            $("button[name*='_reset']").on('click', resetImage);
+
+            $("button[name*='_rotate']").on('click', rotateImage);
+        });
+    </script>
+}
+
+<h2>View Tray Images</h2>
+
+<br />
+
+<form @*action="./ViewTrayImages" *@ method="GET">
+    <div class="form-group">
+        <label>Tray Id</label>
+        <input class="form-control" id="trayId" name="trayId" type="text" value="" />
+    </div>
+    <button type="submit" class="btn btn-primary">Look Up</button>
+</form>
+
+<br />
+<br />
+<br />
+
+
+@if (!String.IsNullOrEmpty(Context.Request.Query["trayId"]))
+{
+    <h4>
+        <strong>
+            Tray Id: @trayId<br />
+            School: @Model.SchoolName<br />
+            Date of Visit: @Model.MeasurementDate.ToString("MM/dd/yyyy")
+        </strong>
+    </h4>
+    
+    <hr />
+}
+
+<br />
+
+@foreach (var weighing in Model.Weighings)
+{
+    var base64 = Convert.ToBase64String(weighing.Picture);
+    var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+
+    <div class="row">
+        <div class="col-xs-12 col-sm-4">
+            <br />
+            <div class="row">
+                <div class="col-xs-12">
+                    <label>
+                        Scan Type: @weighing.WeighStationType.Type
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Salad Dressing: @weighing.SaladDressing
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Milk: @weighing.Milk
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Multiple Trays: @(String.IsNullOrEmpty(@weighing.Multiple) ? "No data" : @weighing.Multiple)
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Empty: @(String.IsNullOrEmpty(@weighing.Empty) ? "No data" : @weighing.Empty)
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Seconds: @(String.IsNullOrEmpty(@weighing.Seconds) ? "No data" : @weighing.Seconds)
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Unique: @weighing.UniqueSituation
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Date Created: @weighing.DtCreated.ToString("MM/dd/yyyy hh:mm:ss tt")
+                    </label>
+                </div>
+                <div class="col-xs-12">
+                    <label>
+                        Created By: @weighing.CreatedBy
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-8">
+            <div class="imageContainer">
+                <img src="@imgSrc" class="img-fluid rotate" alt="Tray Image" id="@($"image{weighing.Id}")">
+            </div>
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h4 class="panel-title">Image Controls</h4>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <label>Brightness<input id="@($"image{weighing.Id}_br")" name="@($"image{weighing.Id}_br")" type="range" min="0" max="200" value="100"></label>
+                        </div>
+                        <div class="col-xs-4">
+                            <label>Contrast<input id="@($"image{weighing.Id}_ct")" name="@($"image{weighing.Id}_ct")" type="range" min="0" max="200" value="100"></label>
+                        </div>
+                        <div class="col-xs-4" style="margin-bottom: 2px">
+                            <button type="button" class="btn btn-primary" id="@($"image{weighing.Id}_reset")" name="@($"image{weighing.Id}_reset")">Reset</button>
+                        </div>
+                        <div class="col-xs-4">
+                            <button type="button" class="btn btn-primary" id="@($"image{weighing.Id}_rotate")" name="@($"image{weighing.Id}_rotate")">Rotate</button>
+                        </div>
+                    </div><!-- /.panel-body/row -->
+                </div><!-- /.panel-body -->
+            </div><!-- /.panel-primary -->
+        </div>
+    </div>
+    <hr />
+}

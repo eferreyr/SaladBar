@@ -1,0 +1,16 @@
+﻿@model IEnumerable<SaladBarWeb.Models.SchoolViewModel>
+
+@{
+    ViewData["Title"] = "School List";
+}
+
+<h2>School List</h2>
+
+@foreach (var item in Model)
+{
+    <div class="form-horizontal">
+        <div class="form-group">
+            @Html.ActionLink(item.Name, "MenuBySchool", "DataEntry", new { schoolId = item.Id })
+        </div>
+    </div>
+}

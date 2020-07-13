@@ -1,0 +1,60 @@
+﻿@model IEnumerable<SaladBarWeb.Models.DataEntryViewModels.MenuViewModel>
+
+@foreach (var item in Model)
+{
+    <div class="form-horizontal well">
+        <div class="form-group">
+            @Html.LabelFor(x => item.Name, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.Name)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2  control-label" for="item_InterventionDay_School_Name">School Name</label>
+            @*@Html.LabelFor(x => item.InterventionDay.School.Name, new { @class = "col-sm-2  control-label" })*@
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.InterventionDay.School.Name)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => item.InterventionDayId, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                @{
+                    var measurementDate = item.InterventionDay.DtIntervention.ToString("yyyy-MM-dd");
+                }
+                <p class="form-control-static">@Html.DisplayFor(x => measurementDate)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2  control-label">Number of Items</label>
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.ActionLink(item.MenuItems.Count.ToString(), "MenuItems", "DataEntry", new { menuId = item.Id })</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => item.Active, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.Active)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => item.CreatedBy, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.CreatedBy)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => item.ModifiedBy, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.ModifiedBy)</p>
+            </div>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => item.DtModified, new { @class = "col-sm-2  control-label" })
+            <div class="col-sm-10">
+                <p class="form-control-static">@Html.DisplayFor(x => item.DtModified)</p>
+            </div>
+        </div>
+        @Html.ActionLink("Add Menu Items", "AddMenuItems", "DataEntry", new { menuId = item.Id }) | @Html.ActionLink("Edit Menu Items", "EditMenuItems", "DataEntry", new { menuId = item.Id })
+    </div>
+}

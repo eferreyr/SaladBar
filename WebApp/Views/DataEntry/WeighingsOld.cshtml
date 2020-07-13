@@ -1,0 +1,96 @@
+﻿@model IEnumerable<SaladBarWeb.DBModels.Weighings>
+
+@{
+    ViewData["Title"] = "WeighingImages";
+    //var base64 = Convert.ToBase64String(Model.Picture);
+    //var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+}
+
+<style>
+    th {
+        border-bottom: 1px solid black;
+    }
+    td {
+        margin-bottom: 3px;
+    }
+</style>
+
+<h2>Index</h2>
+<h2>Weighing Images</h2>
+
+Navigation: @Html.ActionLink("Schools", "Index", "DataEntry") ->  @ViewBag.SchoolName -> @ViewBag.MeasurementDate.ToString("yyyy-MM-dd")
+<br />
+<br />
+
+<div style="text-align:center;">
+    Student ID: 12345<br />
+    School: @ViewBag.SchoolName<br />
+    Date of Visit: @ViewBag.MeasurementDate.ToString("yyyy-MM-dd")
+</div>
+<br />
+<br />
+
+<table>
+
+    @foreach (var item in Model)
+    {
+        var base64 = Convert.ToBase64String(item.Picture);
+        var imgSrc = String.Format("data:image/png;base64,{0}", base64);
+        <tr>
+            <td style="width:50%;border: 1px solid black; padding:5px;"><img src="@imgSrc" style="width:100%" /></td>
+            <td style="width:50%;border: 1px solid black; padding-left:15px;">
+                <table>
+                    <tr>
+                        <th>Tray Info</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Entire Tray</td>
+                        <td><input type="checkbox" />Entree Only</td>
+                        <td><input type="checkbox" />FV Only</td>
+                        <td>Weight: <input type="text" /></td>
+                    </tr>
+                    <tr>
+                        <th>Entree</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Cheese Pizza</td>
+                        <td><input type="checkbox" />Cheese Burger</td>
+                        <td><input type="checkbox" />Salad</td>
+                    </tr>
+                    <tr>
+                        <th>Side</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Fries</td>
+                        <td><input type="checkbox" />Chips</td>
+                    </tr>
+                    <tr>
+                        <th>Fruits and Vegitables</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Orange</td>
+                        <td><input type="checkbox" />Apple</td>
+                    </tr>
+                    <tr>
+                        <th>Beverages</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Juice</td>
+                        <td><input type="checkbox" />Milk</td>
+                    </tr>
+                    <tr>
+                        <th>Image Info</th>
+                    </tr>
+                    <tr>
+                        <td><input type="checkbox" />Poor Quality</td>
+                        <td><input type="checkbox" />Missing</td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+
+    }
+    
+</table>
+@*<img src="@imgSrc" />*@

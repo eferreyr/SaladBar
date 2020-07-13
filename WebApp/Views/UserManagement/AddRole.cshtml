@@ -1,0 +1,13 @@
+﻿@model SaladBarWeb.Models.UserManagementViewModels.UserManagementAddRoleViewModel
+
+<h3>Add Role for @Model.Email</h3>
+<form asp-controller="UserManagement" asp-action="AddRole">
+  <input asp-for="Email" type="hidden" />
+  <select asp-for="NewRole">
+    @foreach (var role in Model.Roles)
+    {
+      <option value="@role.Name">@role.Name</option>
+    }    
+  </select>
+  <input type="submit" value="Add Role" />
+</form>

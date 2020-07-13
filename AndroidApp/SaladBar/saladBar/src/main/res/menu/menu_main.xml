@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <item
+        android:id="@+id/done"
+        app:showAsAction="never"
+        android:title="Done With School" >
+    </item>
+
+    <item
+        android:id="@+id/sync"
+        app:showAsAction="never"
+        android:title="Sync" >
+    </item>
+
+    <item
+        android:id="@+id/syncInfo"
+        app:showAsAction="never"
+        android:title="Sync Info" >
+    </item>
+
+    <item
+        android:id="@+id/backupDb"
+        app:showAsAction="never"
+        android:title="Backup DB" >
+    </item>
+
+    <item
+        android:id="@+id/tracking"
+        app:showAsAction="never"
+        android:title="Output Tracking" >
+    </item>
+
+    <item
+        android:id="@+id/about"
+        app:showAsAction="never"
+        android:title="About" >
+    </item>
+</menu>
+
